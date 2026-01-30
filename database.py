@@ -4,10 +4,12 @@ from datetime import datetime
 db = SQLAlchemy()
 
 class StudentRequest(db.Model):
+    __tablename__ = 'student_request'  # Nom explicite pour PostgreSQL
+    
     id = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String(100), nullable=False)
     prenom = db.Column(db.String(100), nullable=False)
-    adresse = db.Column(db.String(200), nullable=False)
+    adresse = db.Column(db.Text, nullable=False)  # Changé de String(200) à Text
     telephone = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     

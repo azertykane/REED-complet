@@ -30,8 +30,18 @@ def allowed_file(filename):
 def init_database():
     """Initialiser la base de données"""
     with app.app_context():
-        db.create_all()
-        print("✓ Base de données initialisée")
+        try:
+            db.create_all()
+            print("✓ Base de données initialisée")
+        except Exception as e:
+            print(f"✗ Erreur création base de données: {str(e)}")
+            # Si erreur, essayer avec force
+            try:
+                db.drop_all()
+                db.create_all()
+                print("✓ Base de données recréée")
+            except Exception as e2:
+                print(f"✗ Erreur grave: {str(e2)}")
 
 # Fonction SendGrid améliorée avec timeout
 def send_email_sendgrid(to_email, subject, body, from_email=None):
@@ -474,6 +484,117 @@ def send_email():
         print(f"Erreur générale send_email: {str(e)}")
         return jsonify({'error': 'Erreur interne du serveur'}), 500
 
+@app.route('/admin/download_report')
+def download_report():
+    """Générer un rapport PDF"""
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    
+    try:
+        # Create PDF report
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+        
+        # Title
+        p.setFont("Helvetica-Bold", 16)
+        p.setFillColor(HexColor("#1E3A8A"))
+        p.drawString(1*inch, height - 1*inch, "Rapport des Demandes - Amicale des Étudiants")
+        
+        # Date
+        p.setFont("Helvetica", 10)
+        p.setFillColor(HexColor("#666666"))
+        p.drawString(1*inch, height - 1.2*inch, f"Généré le: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+        
+        # Statistics
+        y_position = height - 2*inch
+        
+        p.setFont("Helvetica-Bold", 12)
+        p.setFillColor(HexColor("#1E3A8A"))
+        p.drawString(1*inch, y_position, "Statistiques:")
+        
+        y_position -= 0.25*inch
+        p.setFont("Helvetica", 10)
+        p.setFillColor(HexColor("#000000"))
+        
+        # Get counts
+        total = StudentRequest.query.count()
+        pending = StudentRequest.query.filter_by(status='pending').count()
+        approved = StudentRequest.query.filter_by(status='approved').count()
+        rejected = StudentRequest.query.filter_by(status='rejected').count()
+        
+        stats = [
+            f"Total des demandes: {total}",
+            f"En attente: {pending}",
+            f"Approuvées: {approved}",
+            f"Rejetées: {rejected}"
+        ]
+        
+        for stat in stats:
+            p.drawString(1.2*inch, y_position, stat)
+            y_position -= 0.2*inch
+        
+        # List of requests
+        y_position -= 0.3*inch
+        p.setFont("Helvetica-Bold", 12)
+        p.setFillColor(HexColor("#1E3A8A"))
+        p.drawString(1*inch, y_position, "Liste des Demandes:")
+        
+        y_position -= 0.3*inch
+        p.setFont("Helvetica", 8)
+        
+        # Table header
+        p.setFillColor(HexColor("#FBBF24"))
+        p.rect(1*inch, y_position - 0.1*inch, 6.5*inch, 0.25*inch, fill=1, stroke=0)
+        p.setFillColor(HexColor("#000000"))
+        headers = ["ID", "Nom", "Prénom", "Email", "Statut", "Date"]
+        col_widths = [0.5, 1.5, 1.5, 2, 1, 1]
+        
+        x_position = 1*inch
+        for header, width in zip(headers, col_widths):
+            p.drawString(x_position + 0.1*inch, y_position, header)
+            x_position += width*inch
+        
+        y_position -= 0.3*inch
+        
+        # Table rows
+        requests = StudentRequest.query.order_by(StudentRequest.date_submitted.desc()).all()
+        for req in requests:
+            if y_position < 1*inch:  # New page if needed
+                p.showPage()
+                p.setFont("Helvetica", 8)
+                y_position = height - 1*inch
+            
+            row_data = [
+                str(req.id),
+                req.nom,
+                req.prenom,
+                req.email[:20] + "..." if len(req.email) > 20 else req.email,
+                req.status,
+                req.date_submitted.strftime('%d/%m/%y') if req.date_submitted else ''
+            ]
+            
+            x_position = 1*inch
+            for data, width in zip(row_data, col_widths):
+                p.drawString(x_position + 0.1*inch, y_position, str(data))
+                x_position += width*inch
+            
+            y_position -= 0.2*inch
+        
+        p.save()
+        buffer.seek(0)
+        
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=f"rapport_amicale_{datetime.now().strftime('%Y%m%d')}.pdf",
+            mimetype='application/pdf'
+        )
+    
+    except Exception as e:
+        flash(f'Erreur lors de la génération du rapport: {str(e)}', 'error')
+        return redirect(url_for('admin_dashboard'))
+
 @app.route('/test-sendgrid')
 def test_sendgrid():
     """Route pour tester SendGrid"""
@@ -502,8 +623,8 @@ def admin_test_email():
         if email:
             success = send_email_sendgrid(
                 email, 
-                "Test d'email", 
-                "Ceci est un email de test."
+                "Test d'email - Amicale des Étudiants", 
+                "Ceci est un email de test depuis votre application sur Render."
             )
             
             if success:
@@ -522,6 +643,13 @@ def admin_test_email():
         </form>
     </div>
     '''
+
+@app.route('/admin/email_compose')
+def email_compose():
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    
+    return render_template('email_compose.html')
 
 @app.route('/admin/api/students')
 def api_students():
@@ -558,15 +686,18 @@ def api_stats():
         return jsonify(stats)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 @app.route('/debug')
 def debug():
+    """Route de débogage"""
     info = {
-        'database': 'OK' if db else 'ERROR',
-        'upload_folder': os.path.exists(app.config['UPLOAD_FOLDER']),
-        'sendgrid_key': 'SET' if app.config['SENDGRID_API_KEY'] else 'NOT SET',
-        'sender': app.config['MAIL_DEFAULT_SENDER']
+        'database_configured': 'OK' if db else 'ERROR',
+        'upload_folder_exists': os.path.exists(app.config['UPLOAD_FOLDER']),
+        'sendgrid_key_set': 'YES' if app.config['SENDGRID_API_KEY'] else 'NO',
+        'sender_email': app.config['MAIL_DEFAULT_SENDER'],
+        'database_url': app.config['SQLALCHEMY_DATABASE_URI'][:50] + '...' if len(app.config['SQLALCHEMY_DATABASE_URI']) > 50 else app.config['SQLALCHEMY_DATABASE_URI']
     }
-    return jsonify(info) 
+    return jsonify(info)
 
 @app.route('/admin/logout')
 def admin_logout():
@@ -584,14 +715,22 @@ def internal_server_error(e):
     print(f"Erreur 500: {str(e)}")
     return render_template('500.html'), 500
 
-# Point d'entrée
+# Initialisation
 if __name__ == '__main__':
-    init_database()
+    # Initialiser la base de données
+    with app.app_context():
+        try:
+            db.create_all()
+            print("✓ Base de données initialisée")
+        except Exception as e:
+            print(f"✗ Erreur initialisation DB: {str(e)}")
+    
     print("\n" + "="*60)
     print("APPLICATION PRÊTE")
     print("="*60)
-    print(f"Database: {app.config['SQLALCHEMY_DATABASE_URI'][:50]}...")
-    print(f"SendGrid: {'✓' if app.config['SENDGRID_API_KEY'] else '✗'}")
+    print(f"Database: {app.config.get('SQLALCHEMY_DATABASE_URI', 'Non configurée')[:50]}...")
+    print(f"SendGrid: {'✓ Configuré' if app.config['SENDGRID_API_KEY'] else '✗ Non configuré'}")
+    print(f"Sender: {app.config['MAIL_DEFAULT_SENDER']}")
     print("="*60 + "\n")
     
     app.run(debug=True, host='0.0.0.0', port=5000)

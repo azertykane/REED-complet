@@ -9,4 +9,4 @@ Flask-WTF==1.1.1
 Pillow==10.3.0
 gunicorn==21.2.0
 requests==2.31.0
-psycopg2-binary==2.9.9  # Pour PostgreSQL
+psycopg2-binary==2.9.9

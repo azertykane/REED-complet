@@ -1,15 +1,16 @@
 #!/bin/bash
 # start.sh
 
-echo "Starting the application..."
+# Créer les dossiers nécessaires
+mkdir -p static/uploads instance
 
-# Initialize database
+# Initialiser la base de données
 python -c "
-from app import app, init_database
+from app import app, db
 with app.app_context():
-    init_database()
-    print('Database initialized')
+    db.create_all()
+    print('Base de données initialisée')
 "
 
-# Start Gunicorn
-exec gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 app:app
+# Démarrer l'application
+exec gunicorn --bind 0.0.0.0:$PORT --timeout 120 --workers 2 app:app
