@@ -30,16 +30,3 @@ class StudentRequest(db.Model):
     
     def __repr__(self):
         return f'<StudentRequest {self.nom} {self.prenom}>'
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'nom': self.nom,
-            'prenom': self.prenom,
-            'adresse': self.adresse,
-            'telephone': self.telephone,
-            'email': self.email,
-            'status': self.status,
-            'date_submitted': self.date_submitted.strftime('%Y-%m-%d %H:%M') if self.date_submitted else None,
-            'admin_notes': self.admin_notes
-        }

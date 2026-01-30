@@ -17,28 +17,43 @@ from database import db, StudentRequest
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Initialize extensions
+# Initialize database
 db.init_app(app)
 
-# Create upload folder if it doesn't exist
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Create necessary directories
+os.makedirs('static/uploads', exist_ok=True)
+os.makedirs('instance', exist_ok=True)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-# Fonction SendGrid simplifiée
+def init_database():
+    """Initialiser la base de données"""
+    with app.app_context():
+        db.create_all()
+        print("✓ Base de données initialisée")
+
+# Fonction SendGrid améliorée avec timeout
 def send_email_sendgrid(to_email, subject, body, from_email=None):
     """Envoyer un email via SendGrid API v3"""
     try:
+        api_key = app.config['SENDGRID_API_KEY']
+        if not api_key:
+            print("✗ SendGrid API Key non configurée")
+            return False
+        
         if from_email is None:
             from_email = app.config['MAIL_DEFAULT_SENDER']
+            if not from_email:
+                print("✗ Expéditeur non configuré")
+                return False
         
         # URL de l'API SendGrid
         url = "https://api.sendgrid.com/v3/mail/send"
         
         # Headers avec l'API Key
         headers = {
-            "Authorization": f"Bearer {app.config['SENDGRID_API_KEY']}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         
@@ -59,16 +74,19 @@ def send_email_sendgrid(to_email, subject, body, from_email=None):
             ]
         }
         
-        # Envoyer la requête
-        response = requests.post(url, headers=headers, json=data)
+        # Envoyer la requête avec timeout
+        response = requests.post(url, headers=headers, json=data, timeout=30)
         
         if response.status_code in [200, 202]:
-            print(f"✓ Email envoyé à {to_email} - Status: {response.status_code}")
+            print(f"✓ Email envoyé à {to_email}")
             return True
         else:
-            print(f"✗ Erreur SendGrid pour {to_email}: {response.status_code} - {response.text}")
+            print(f"✗ Erreur SendGrid ({response.status_code}): {response.text[:200]}")
             return False
             
+    except requests.exceptions.Timeout:
+        print(f"✗ Timeout SendGrid pour {to_email}")
+        return False
     except Exception as e:
         print(f"✗ Exception SendGrid pour {to_email}: {str(e)}")
         return False
@@ -81,6 +99,7 @@ def send_email_async(to_email, subject, body):
     except Exception as e:
         print(f"Erreur dans send_email_async: {str(e)}")
 
+# Routes
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -90,19 +109,24 @@ def formulaire():
     if request.method == 'POST':
         try:
             # Get form data
-            nom = request.form.get('nom')
-            prenom = request.form.get('prenom')
-            adresse = request.form.get('adresse')
-            telephone = request.form.get('telephone')
-            email = request.form.get('email')
+            nom = request.form.get('nom', '').strip()
+            prenom = request.form.get('prenom', '').strip()
+            adresse = request.form.get('adresse', '').strip()
+            telephone = request.form.get('telephone', '').strip()
+            email = request.form.get('email', '').strip().lower()
             
             # Validate required fields
             if not all([nom, prenom, adresse, telephone, email]):
                 flash('Tous les champs sont obligatoires', 'error')
                 return redirect(url_for('formulaire'))
             
+            # Validate email format
+            if '@' not in email or '.' not in email:
+                flash('Format d\'email invalide', 'error')
+                return redirect(url_for('formulaire'))
+            
             # Validate phone number
-            if not telephone.replace(' ', '').isdigit():
+            if not telephone.replace(' ', '').replace('+', '').isdigit():
                 flash('Numéro de téléphone invalide', 'error')
                 return redirect(url_for('formulaire'))
             
@@ -145,7 +169,8 @@ def formulaire():
                 file = request.files.get(file_key)
                 if file and file.filename and allowed_file(file.filename):
                     # Utiliser un nom de fichier simple
-                    filename = f"{new_request.id}_{field}.{file.filename.rsplit('.', 1)[1].lower()}"
+                    ext = file.filename.rsplit('.', 1)[1].lower()
+                    filename = secure_filename(f"{new_request.id}_{field}.{ext}")
                     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                     
                     # Sauvegarder le fichier
@@ -155,16 +180,20 @@ def formulaire():
             # Commit toutes les données
             db.session.commit()
             
-            # Envoyer l'email de confirmation
-            send_confirmation_email(email, nom, prenom, new_request.id)
+            # Envoyer l'email de confirmation en arrière-plan
+            try:
+                send_confirmation_email(email, nom, prenom, new_request.id)
+            except Exception as email_error:
+                print(f"Erreur programmation email: {email_error}")
+                # Ne pas bloquer l'utilisateur si l'email échoue
             
-            flash('Votre demande a été soumise avec succès! Vous recevrez un email de confirmation.', 'success')
+            flash('Votre demande a été soumise avec succès!', 'success')
             return redirect(url_for('index'))
             
         except Exception as e:
             db.session.rollback()
-            app.logger.error(f'Erreur lors de la soumission: {str(e)}')
-            flash('Une erreur est survenue lors de la soumission. Veuillez réessayer.', 'error')
+            print(f"Erreur lors de la soumission: {str(e)}")
+            flash('Une erreur est survenue. Veuillez réessayer.', 'error')
             return redirect(url_for('formulaire'))
     
     return render_template('form.html')
@@ -204,7 +233,11 @@ def admin_login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         
-        if username == 'admin' and password == 'admin123':
+        # Utilisez les variables d'environnement
+        admin_username = app.config['ADMIN_USERNAME']
+        admin_password = app.config['ADMIN_PASSWORD']
+        
+        if username == admin_username and password == admin_password:
             session['admin_logged_in'] = True
             session.permanent = True
             flash('Connexion réussie!', 'success')
@@ -220,24 +253,37 @@ def admin_dashboard():
         flash('Veuillez vous connecter', 'error')
         return redirect(url_for('admin_login'))
     
-    requests = StudentRequest.query.order_by(StudentRequest.date_submitted.desc()).all()
-    pending_count = StudentRequest.query.filter_by(status='pending').count()
-    approved_count = StudentRequest.query.filter_by(status='approved').count()
-    rejected_count = StudentRequest.query.filter_by(status='rejected').count()
-    
-    return render_template('admin_dashboard.html', 
-                         requests=requests,
-                         pending_count=pending_count,
-                         approved_count=approved_count,
-                         rejected_count=rejected_count)
+    try:
+        requests = StudentRequest.query.order_by(StudentRequest.date_submitted.desc()).all()
+        pending_count = StudentRequest.query.filter_by(status='pending').count()
+        approved_count = StudentRequest.query.filter_by(status='approved').count()
+        rejected_count = StudentRequest.query.filter_by(status='rejected').count()
+        
+        return render_template('admin_dashboard.html', 
+                             requests=requests,
+                             pending_count=pending_count,
+                             approved_count=approved_count,
+                             rejected_count=rejected_count)
+    except Exception as e:
+        print(f"Erreur dashboard: {str(e)}")
+        flash('Erreur de chargement du tableau de bord', 'error')
+        return render_template('admin_dashboard.html', 
+                             requests=[],
+                             pending_count=0,
+                             approved_count=0,
+                             rejected_count=0)
 
 @app.route('/admin/view/<int:request_id>')
 def view_request(request_id):
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
     
-    student_request = StudentRequest.query.get_or_404(request_id)
-    return render_template('view_request.html', request=student_request)
+    try:
+        student_request = StudentRequest.query.get_or_404(request_id)
+        return render_template('view_request.html', request=student_request)
+    except Exception as e:
+        flash('Demande non trouvée', 'error')
+        return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/update_status/<int:request_id>', methods=['POST'])
 def update_status(request_id):
@@ -339,8 +385,8 @@ def send_email():
             return jsonify({'error': 'Données JSON requises'}), 400
         
         recipient_type = data.get('recipient_type', 'all')
-        subject = data.get('subject', '')
-        message = data.get('message', '')
+        subject = data.get('subject', '').strip()
+        message = data.get('message', '').strip()
         custom_emails = data.get('custom_emails', [])
         selected_ids = data.get('selected_ids', [])
         
@@ -348,49 +394,49 @@ def send_email():
             return jsonify({'error': 'Sujet et message sont requis'}), 400
         
         # Récupérer les destinataires
-        recipients = []
         emails_list = []
+        recipients = []
         
-        if recipient_type == 'approved':
-            approved_students = StudentRequest.query.filter_by(status='approved').all()
-            recipients = approved_students
-            emails_list = [student.email for student in approved_students if student.email]
-        elif recipient_type == 'rejected':
-            rejected_students = StudentRequest.query.filter_by(status='rejected').all()
-            recipients = rejected_students
-            emails_list = [student.email for student in rejected_students if student.email]
-        elif recipient_type == 'pending':
-            pending_students = StudentRequest.query.filter_by(status='pending').all()
-            recipients = pending_students
-            emails_list = [student.email for student in pending_students if student.email]
-        elif recipient_type == 'selected' and selected_ids:
-            selected_students = StudentRequest.query.filter(StudentRequest.id.in_(selected_ids)).all()
-            recipients = selected_students
-            emails_list = [student.email for student in selected_students if student.email]
-        elif recipient_type == 'custom' and custom_emails:
-            emails_list = [email.strip() for email in custom_emails if email.strip()]
-        else:
-            all_students = StudentRequest.query.all()
-            recipients = all_students
-            emails_list = [student.email for student in all_students if student.email]
+        try:
+            if recipient_type == 'approved':
+                recipients = StudentRequest.query.filter_by(status='approved').all()
+                emails_list = [s.email for s in recipients if s.email]
+            elif recipient_type == 'rejected':
+                recipients = StudentRequest.query.filter_by(status='rejected').all()
+                emails_list = [s.email for s in recipients if s.email]
+            elif recipient_type == 'pending':
+                recipients = StudentRequest.query.filter_by(status='pending').all()
+                emails_list = [s.email for s in recipients if s.email]
+            elif recipient_type == 'selected' and selected_ids:
+                recipients = StudentRequest.query.filter(StudentRequest.id.in_(selected_ids)).all()
+                emails_list = [s.email for s in recipients if s.email]
+            elif recipient_type == 'custom' and custom_emails:
+                emails_list = [email.strip() for email in custom_emails if email.strip()]
+                recipients = []  # Pas de données étudiant pour emails personnalisés
+            else:
+                recipients = StudentRequest.query.all()
+                emails_list = [s.email for s in recipients if s.email]
+        except Exception as db_error:
+            print(f"Erreur DB: {str(db_error)}")
+            return jsonify({'error': 'Erreur base de données'}), 500
         
         # Filtrer les emails valides
-        valid_emails = [email for email in emails_list if email and '@' in email]
+        valid_emails = [email for email in emails_list if email and '@' in email and '.' in email]
         
         if not valid_emails:
             return jsonify({'error': 'Aucun destinataire valide trouvé'}), 400
         
-        # Limiter à 20 emails pour éviter les limites
-        valid_emails = valid_emails[:20]
+        # Limiter à 10 emails pour éviter les limites
+        valid_emails = valid_emails[:10]
         
         # Envoyer les emails en arrière-plan
         sent_count = 0
         
         for email in valid_emails:
             try:
-                # Personnaliser le message
+                # Personnaliser le message si possible
                 personalized_message = message
-                if recipient_type in ['approved', 'rejected', 'pending', 'selected', 'all']:
+                if recipient_type in ['approved', 'rejected', 'pending', 'selected', 'all'] and recipients:
                     student = next((s for s in recipients if s.email == email), None)
                     if student:
                         personalized_message = message.replace('{nom}', student.nom or '')
@@ -404,20 +450,20 @@ def send_email():
                     target=send_email_async,
                     args=(email, subject, personalized_message)
                 )
-                thread.daemon = True  # Thread démon pour ne pas bloquer l'arrêt
+                thread.daemon = True
                 thread.start()
                 sent_count += 1
                 
                 # Petite pause pour éviter le rate limiting
-                time.sleep(0.5)
+                time.sleep(0.3)
                     
             except Exception as e:
                 print(f"Erreur pour {email}: {str(e)}")
         
-        # Préparer la réponse IMMÉDIATE
+        # Préparer la réponse
         response_data = {
             'success': True, 
-            'message': f'Envoi d\'emails lancé en arrière-plan. {sent_count} email(s) seront envoyés.',
+            'message': f'Envoi lancé pour {sent_count} email(s).',
             'sent_count': sent_count,
             'total_count': len(valid_emails)
         }
@@ -425,193 +471,57 @@ def send_email():
         return jsonify(response_data)
     
     except Exception as e:
-        print(f"Erreur générale dans send_email: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        print(f"Erreur générale send_email: {str(e)}")
+        return jsonify({'error': 'Erreur interne du serveur'}), 500
 
 @app.route('/test-sendgrid')
 def test_sendgrid():
     """Route pour tester SendGrid"""
     try:
-        # Tester l'envoi à votre propre email
         test_email = "commissionsociale.reed@gmail.com"
-        subject = "Test SendGrid depuis Render"
-        message = "Ceci est un test d'envoi d'email depuis votre application sur Render."
+        subject = "Test SendGrid"
+        message = "Test réussi si vous recevez ce message."
         
         success = send_email_sendgrid(test_email, subject, message)
         
         if success:
-            return f"✓ Email de test envoyé à {test_email}"
+            return "✓ Test SendGrid réussi"
         else:
-            return "✗ Échec de l'envoi de l'email de test"
+            return "✗ Test SendGrid échoué"
     
     except Exception as e:
         return f"Erreur: {str(e)}"
 
-@app.route('/admin/test-email')
+@app.route('/admin/test-email', methods=['GET', 'POST'])
 def admin_test_email():
-    """Page admin pour tester les emails"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
+    
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        if email:
+            success = send_email_sendgrid(
+                email, 
+                "Test d'email", 
+                "Ceci est un email de test."
+            )
+            
+            if success:
+                flash('✓ Test envoyé avec succès', 'success')
+            else:
+                flash('✗ Échec de l\'envoi', 'error')
+        
+        return redirect(url_for('admin_test_email'))
     
     return '''
-    <div style="padding: 20px; max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-        <h2 style="color: #2c3e50;">📧 Tester l'envoi d'emails avec SendGrid</h2>
-        <form method="POST" action="/admin/send-test-email" style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Email de test:</label>
-                <input type="email" name="email" value="commissionsociale.reed@gmail.com" required 
-                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
-            </div>
-            <button type="submit" style="background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
-                Envoyer un test
-            </button>
+    <div style="padding: 20px; max-width: 500px; margin: 0 auto;">
+        <h2>Tester SendGrid</h2>
+        <form method="POST">
+            <input type="email" name="email" placeholder="email@exemple.com" required style="width:100%;padding:8px;margin:10px 0;">
+            <button type="submit" style="padding:10px 20px;">Envoyer test</button>
         </form>
-        <div style="margin-top: 20px; padding: 15px; background: #e8f4fd; border-radius: 8px;">
-            <h4 style="margin-top: 0; color: #0c5460;">🔍 Vérifications SendGrid</h4>
-            <ol style="color: #666;">
-                <li>Vérifiez votre boîte de réception et vos spams</li>
-                <li>Connectez-vous à <a href="https://app.sendgrid.com" target="_blank">SendGrid</a></li>
-                <li>Allez dans "Activity" → "Email Activity"</li>
-                <li>Vérifiez que l'email apparaît comme "Delivered"</li>
-            </ol>
-        </div>
     </div>
     '''
-
-@app.route('/admin/send-test-email', methods=['POST'])
-def send_test_email():
-    if not session.get('admin_logged_in'):
-        return redirect(url_for('admin_login'))
-    
-    email = request.form.get('email')
-    if email:
-        success = send_email_sendgrid(
-            email, 
-            "Test d'email - Amicale des Étudiants", 
-            "Ceci est un email de test depuis votre application sur Render.\n\nSi vous recevez cet email, cela signifie que SendGrid est correctement configuré."
-        )
-        
-        if success:
-            flash(f'✓ Email de test envoyé à {email}. Vérifiez votre boîte de réception.', 'success')
-        else:
-            flash(f'✗ Échec de l\'envoi à {email}. Vérifiez la configuration SendGrid.', 'error')
-    
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/download_report')
-def download_report():
-    if not session.get('admin_logged_in'):
-        return redirect(url_for('admin_login'))
-    
-    try:
-        # Create PDF report
-        buffer = io.BytesIO()
-        p = canvas.Canvas(buffer, pagesize=letter)
-        width, height = letter
-        
-        # Title
-        p.setFont("Helvetica-Bold", 16)
-        p.setFillColor(HexColor("#1E3A8A"))
-        p.drawString(1*inch, height - 1*inch, "Rapport des Demandes - Amicale des Étudiants")
-        
-        # Date
-        p.setFont("Helvetica", 10)
-        p.setFillColor(HexColor("#666666"))
-        p.drawString(1*inch, height - 1.2*inch, f"Généré le: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-        
-        # Statistics
-        y_position = height - 2*inch
-        
-        p.setFont("Helvetica-Bold", 12)
-        p.setFillColor(HexColor("#1E3A8A"))
-        p.drawString(1*inch, y_position, "Statistiques:")
-        
-        y_position -= 0.25*inch
-        p.setFont("Helvetica", 10)
-        p.setFillColor(HexColor("#000000"))
-        
-        # Get counts
-        total = StudentRequest.query.count()
-        pending = StudentRequest.query.filter_by(status='pending').count()
-        approved = StudentRequest.query.filter_by(status='approved').count()
-        rejected = StudentRequest.query.filter_by(status='rejected').count()
-        
-        stats = [
-            f"Total des demandes: {total}",
-            f"En attente: {pending}",
-            f"Approuvées: {approved}",
-            f"Rejetées: {rejected}"
-        ]
-        
-        for stat in stats:
-            p.drawString(1.2*inch, y_position, stat)
-            y_position -= 0.2*inch
-        
-        # List of requests
-        y_position -= 0.3*inch
-        p.setFont("Helvetica-Bold", 12)
-        p.setFillColor(HexColor("#1E3A8A"))
-        p.drawString(1*inch, y_position, "Liste des Demandes:")
-        
-        y_position -= 0.3*inch
-        p.setFont("Helvetica", 8)
-        
-        # Table header
-        p.setFillColor(HexColor("#FBBF24"))
-        p.rect(1*inch, y_position - 0.1*inch, 6.5*inch, 0.25*inch, fill=1, stroke=0)
-        p.setFillColor(HexColor("#000000"))
-        headers = ["ID", "Nom", "Prénom", "Email", "Statut", "Date"]
-        col_widths = [0.5, 1.5, 1.5, 2, 1, 1]
-        
-        x_position = 1*inch
-        for header, width in zip(headers, col_widths):
-            p.drawString(x_position + 0.1*inch, y_position, header)
-            x_position += width*inch
-        
-        y_position -= 0.3*inch
-        
-        # Table rows
-        requests = StudentRequest.query.order_by(StudentRequest.date_submitted.desc()).all()
-        for req in requests:
-            if y_position < 1*inch:  # New page if needed
-                p.showPage()
-                p.setFont("Helvetica", 8)
-                y_position = height - 1*inch
-            
-            row_data = [
-                str(req.id),
-                req.nom,
-                req.prenom,
-                req.email[:20] + "..." if len(req.email) > 20 else req.email,
-                req.status,
-                req.date_submitted.strftime('%d/%m/%y') if req.date_submitted else ''
-            ]
-            
-            x_position = 1*inch
-            for data, width in zip(row_data, col_widths):
-                p.drawString(x_position + 0.1*inch, y_position, str(data))
-                x_position += width*inch
-            
-            y_position -= 0.2*inch
-        
-        p.save()
-        buffer.seek(0)
-        
-        return send_file(buffer, 
-                        as_attachment=True, 
-                        download_name=f"rapport_amicale_{datetime.now().strftime('%Y%m%d')}.pdf", 
-                        mimetype='application/pdf')
-    
-    except Exception as e:
-        flash(f'Erreur lors de la génération du rapport: {str(e)}', 'error')
-        return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/email_compose')
-def email_compose():
-    if not session.get('admin_logged_in'):
-        return redirect(url_for('admin_login'))
-    
-    return render_template('email_compose.html')
 
 @app.route('/admin/api/students')
 def api_students():
@@ -627,10 +537,7 @@ def api_students():
                 'nom': student.nom,
                 'prenom': student.prenom,
                 'email': student.email,
-                'telephone': student.telephone,
-                'adresse': student.adresse,
-                'status': student.status,
-                'date_submitted': student.date_submitted.strftime('%Y-%m-%d') if student.date_submitted else None
+                'status': student.status
             })
         return jsonify(students_data)
     except Exception as e:
@@ -658,25 +565,24 @@ def admin_logout():
     flash('Déconnexion réussie', 'success')
     return redirect(url_for('admin_login'))
 
+# Gestion des erreurs
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 
 @app.errorhandler(500)
 def internal_server_error(e):
+    print(f"Erreur 500: {str(e)}")
     return render_template('500.html'), 500
 
+# Point d'entrée
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        print("\n" + "="*60)
-        print("APPLICATION DÉMARRÉE")
-        print("="*60)
-        print("URL: http://127.0.0.1:5000")
-        print("Login admin: http://127.0.0.1:5000/admin/login")
-        print("Identifiants: admin / admin123")
-        print(f"SendGrid API Key: {'✓ Configurée' if app.config['SENDGRID_API_KEY'] else '✗ Non configurée'}")
-        print(f"Email expéditeur: {app.config['MAIL_DEFAULT_SENDER']}")
-        print("="*60 + "\n")
+    init_database()
+    print("\n" + "="*60)
+    print("APPLICATION PRÊTE")
+    print("="*60)
+    print(f"Database: {app.config['SQLALCHEMY_DATABASE_URI'][:50]}...")
+    print(f"SendGrid: {'✓' if app.config['SENDGRID_API_KEY'] else '✗'}")
+    print("="*60 + "\n")
     
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
