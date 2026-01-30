@@ -558,6 +558,15 @@ def api_stats():
         return jsonify(stats)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+@app.route('/debug')
+def debug():
+    info = {
+        'database': 'OK' if db else 'ERROR',
+        'upload_folder': os.path.exists(app.config['UPLOAD_FOLDER']),
+        'sendgrid_key': 'SET' if app.config['SENDGRID_API_KEY'] else 'NOT SET',
+        'sender': app.config['MAIL_DEFAULT_SENDER']
+    }
+    return jsonify(info) 
 
 @app.route('/admin/logout')
 def admin_logout():
