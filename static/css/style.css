@@ -98,11 +98,12 @@ body {
     display: flex;
     align-items: flex-start;
     margin-bottom: 1.5rem;
+    padding: 0.5rem;
 }
 
 .step-number {
-    width: 36px;
-    height: 36px;
+    width: 50px;
+    height: 50px;
     background: var(--primary-yellow);
     color: white;
     border-radius: 50%;
@@ -110,32 +111,81 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    margin-right: 1rem;
+    font-size: 1.5rem;
+    margin-right: 1.5rem;
     flex-shrink: 0;
-    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
 }
 
 .step-content {
     flex: 1;
+    padding-top: 0.5rem;
+}
+
+.step-content h5 {
+    color: var(--primary-blue);
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.step-content p {
+    color: var(--dark-gray);
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
 }
 
 /* Form Preview Card */
 .form-preview {
     border: none;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
-    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
     overflow: hidden;
+    border-top: 5px solid var(--primary-yellow);
 }
 
 .form-preview .card-body {
-    padding: 1.5rem;
+    padding: 2rem;
+}
+
+.form-preview .card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.form-preview .card-title:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: var(--primary-yellow);
 }
 
 .form-preview .list-group-item {
     border: none;
     padding: 0.75rem 0;
     background: transparent;
-    font-size: 0.95rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.form-preview .list-group-item:last-child {
+    border-bottom: none !important;
+}
+
+.form-preview .list-group-item i {
+    font-size: 1.25rem;
+    min-width: 30px;
+}
+
+.form-preview .list-group-item span {
+    font-size: 1.1rem;
+    color: var(--dark-gray);
 }
 
 /* Document Upload */
@@ -241,82 +291,60 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .hero-section {
-        padding: 2rem 0;
-    }
-    
-    .hero-section h1 {
-        font-size: 1.5rem;
-    }
-    
-    .hero-section .lead {
-        font-size: 1rem;
-    }
-    
-    .feature-card {
-        padding: 1.25rem;
-        margin-bottom: 1rem;
-    }
-    
-    .feature-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 1.25rem;
-    }
-    
     .process-step {
         flex-direction: column;
         text-align: center;
         align-items: center;
+        margin-bottom: 2rem;
     }
     
     .step-number {
-        margin: 0 auto 0.75rem;
+        margin: 0 auto 1rem;
+        width: 45px;
+        height: 45px;
+        font-size: 1.25rem;
     }
     
-    .navbar-brand {
-        font-size: 1rem;
+    .step-content {
+        text-align: center;
+        padding-top: 0;
+    }
+    
+    .step-content h5 {
+        font-size: 1.1rem;
+    }
+    
+    .step-content p {
+        font-size: 0.95rem;
     }
     
     .form-preview .card-body {
-        padding: 1.25rem;
+        padding: 1.5rem;
+    }
+    
+    .form-preview .list-group-item {
+        padding: 0.5rem 0;
+    }
+    
+    .form-preview .list-group-item span {
+        font-size: 1rem;
     }
 }
 
 @media (max-width: 576px) {
-    body {
-        font-size: 15px;
+    .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
     }
     
-    .hero-section h1 {
+    .form-preview .card-title {
         font-size: 1.3rem;
     }
     
-    .hero-section .btn-lg {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-    
-    .container {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-    
-    .document-upload {
-        padding: 0.75rem;
-    }
-    
-    .document-upload label {
-        font-size: 0.9rem;
-    }
-    
-    .btn {
-        width: 100%;
-    }
-    
-    .d-flex.flex-column.flex-md-row.gap-2 .btn {
-        width: 100%;
-        margin-bottom: 0.5rem;
+    .form-preview .list-group-item {
+        padding: 0.75rem 0;
+        font-size: 0.95rem;
     }
 }
 
