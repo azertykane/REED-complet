@@ -115,6 +115,10 @@ def send_email_async(to_email, subject, body):
 def index():
     return render_template('index.html')
 
+@app.route('/information')
+def information():
+    return render_template('information.html')
+
 @app.route('/formulaire', methods=['GET', 'POST'])
 def formulaire():
     if request.method == 'POST':
@@ -202,7 +206,7 @@ def formulaire():
                 # Ne pas bloquer l'utilisateur si l'email échoue
             
             flash('Votre demande a été soumise avec succès!', 'success')
-            return redirect(url_for('index'))
+            return redirect(url_for('information'))
             
         except Exception as e:
             db.session.rollback()
