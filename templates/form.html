@@ -6,22 +6,27 @@
 <style>
     .form-section {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 3rem 0;
-        margin-bottom: 3rem;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
         color: white;
     }
     .document-upload {
         border: 2px dashed var(--light-blue);
         border-radius: 10px;
-        padding: 1.5rem;
+        padding: 1rem;
         text-align: center;
         background: var(--light-gray);
         transition: all 0.3s ease;
         height: 100%;
+        margin-bottom: 1rem;
     }
     .document-upload:hover {
         border-color: var(--secondary-blue);
         background: var(--light-blue);
+    }
+    #progress-bar {
+        height: 4px;
+        margin-top: 1rem;
     }
 </style>
 {% endblock %}
@@ -31,8 +36,8 @@
     <div class="container">
         <div class="row">
             <div class="col-12 text-center">
-                <h1 class="display-5 fw-bold">Formulaire d'Inscription</h1>
-                <p class="lead">Remplissez ce formulaire pour faire une demande d'adhésion à l'Amicale des Étudiants</p>
+                <h1 class="h3 fw-bold mb-2">Formulaire d'Inscription</h1>
+                <p class="lead mb-0">Remplissez ce formulaire pour faire une demande d'adhésion</p>
             </div>
         </div>
     </div>
@@ -40,120 +45,123 @@
 
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card shadow-lg border-0">
-                <div class="card-body p-5">
+        <div class="col-12 col-lg-10">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-body p-3 p-md-4">
                     <form method="POST" action="{{ url_for('formulaire') }}" enctype="multipart/form-data" id="demandeForm">
-                        <h3 class="mb-4 text-primary">
-                            <i class="fas fa-user-circle me-2"></i> Informations personnelles
+                        <h3 class="h5 mb-3 text-primary">
+                            <i class="fas fa-user-circle me-2"></i>Informations personnelles
                         </h3>
                         
-                        <div class="row mb-4">
-                            <div class="col-md-6 mb-3">
-                                <label for="nom" class="form-label">Nom *</label>
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="nom" class="form-label fw-semibold">Nom *</label>
                                 <input type="text" class="form-control" id="nom" name="nom" required>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="prenom" class="form-label">Prénom *</label>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="prenom" class="form-label fw-semibold">Prénom *</label>
                                 <input type="text" class="form-control" id="prenom" name="prenom" required>
                             </div>
                             <div class="col-12 mb-3">
-                                <label for="adresse" class="form-label">Adresse complète *</label>
+                                <label for="adresse" class="form-label fw-semibold">Adresse complète *</label>
                                 <textarea class="form-control" id="adresse" name="adresse" rows="2" required></textarea>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="telephone" class="form-label">Numéro de téléphone *</label>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="telephone" class="form-label fw-semibold">Numéro de téléphone *</label>
                                 <input type="tel" class="form-control" id="telephone" name="telephone" required>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Email *</label>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="email" class="form-label fw-semibold">Email *</label>
                                 <input type="email" class="form-control" id="email" name="email" required>
                             </div>
                         </div>
 
-                        <hr class="my-5">
+                        <hr class="my-4">
 
-                        <h3 class="mb-4 text-primary">
-                            <i class="fas fa-file-upload me-2"></i> Documents à fournir
+                        <h3 class="h5 mb-3 text-primary">
+                            <i class="fas fa-file-upload me-2"></i>Documents à fournir
                         </h3>
-                        <p class="text-muted mb-4">Tous les documents doivent être au format PDF, JPG ou PNG (max 16MB)</p>
+                        <p class="text-muted mb-3">Tous les documents doivent être au format PDF, JPG ou PNG (max 16MB)</p>
 
                         <div class="row">
                             <!-- Ligne 1 -->
-                            <div class="col-md-4 mb-4">
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
                                 <div class="document-upload">
-                                    <label for="certificat_inscription" class="form-label">
-                                        <i class="fas fa-graduation-cap me-2"></i>Certificat d'inscription ou carte étudiante *
+                                    <label for="certificat_inscription" class="form-label fw-semibold">
+                                        <i class="fas fa-graduation-cap me-1"></i>Certificat d'inscription *
                                     </label>
-                                    <input type="file" class="form-control" id="certificat_inscription" 
+                                    <input type="file" class="form-control form-control-sm" id="certificat_inscription" 
                                            name="certificat_inscription" accept=".pdf,.jpg,.jpeg,.png" required>
-                                    <small class="form-text text-muted">Document prouvant votre statut étudiant</small>
+                                    <small class="form-text text-muted d-block mt-1">Document prouvant votre statut étudiant</small>
                                 </div>
                             </div>
-                            <div class="col-md-4 mb-4">
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
                                 <div class="document-upload">
-                                    <label for="certificat_residence" class="form-label">
-                                        <i class="fas fa-home me-2"></i>Certificat de résidence *
+                                    <label for="certificat_residence" class="form-label fw-semibold">
+                                        <i class="fas fa-home me-1"></i>Certificat de résidence *
                                     </label>
-                                    <input type="file" class="form-control" id="certificat_residence" 
+                                    <input type="file" class="form-control form-control-sm" id="certificat_residence" 
                                            name="certificat_residence" accept=".pdf,.jpg,.jpeg,.png" required>
-                                    <small class="form-text text-muted">Justificatif de domicile</small>
+                                    <small class="form-text text-muted d-block mt-1">Justificatif de domicile</small>
                                 </div>
                             </div>
-                            <div class="col-md-4 mb-4">
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
                                 <div class="document-upload">
-                                    <label for="copie_cni" class="form-label">
-                                        <i class="fas fa-id-card me-2"></i>Copie de la CNI *
+                                    <label for="copie_cni" class="form-label fw-semibold">
+                                        <i class="fas fa-id-card me-1"></i>Copie de la CNI *
                                     </label>
-                                    <input type="file" class="form-control" id="copie_cni" 
+                                    <input type="file" class="form-control form-control-sm" id="copie_cni" 
                                            name="copie_cni" accept=".pdf,.jpg,.jpeg,.png" required>
-                                    <small class="form-text text-muted">Carte Nationale d'Identité recto-verso</small>
+                                    <small class="form-text text-muted d-block mt-1">Carte Nationale d'Identité recto-verso</small>
                                 </div>
                             </div>
                             
                             <!-- Ligne 2 -->
-                            <div class="col-md-6 mb-4">
+                            <div class="col-12 col-md-6 col-lg-6 mb-3">
                                 <div class="document-upload">
-                                    <label for="demande_manuscrite" class="form-label">
-                                        <i class="fas fa-pen-fancy me-2"></i>Demande manuscrite *
+                                    <label for="demande_manuscrite" class="form-label fw-semibold">
+                                        <i class="fas fa-pen-fancy me-1"></i>Demande manuscrite *
                                     </label>
-                                    <input type="file" class="form-control" id="demande_manuscrite" 
+                                    <input type="file" class="form-control form-control-sm" id="demande_manuscrite" 
                                            name="demande_manuscrite" accept=".pdf,.jpg,.jpeg,.png" required>
-                                    <small class="form-text text-muted">Lettre manuscrite de motivation</small>
+                                    <small class="form-text text-muted d-block mt-1">Lettre manuscrite de motivation</small>
                                 </div>
                             </div>
-                            <div class="col-md-6 mb-4">
+                            <div class="col-12 col-md-6 col-lg-6 mb-3">
                                 <div class="document-upload">
-                                    <label for="carte_membre_reed" class="form-label">
-                                        <i class="fas fa-address-card me-2"></i>Carte membre REED *
+                                    <label for="carte_membre_reed" class="form-label fw-semibold">
+                                        <i class="fas fa-address-card me-1"></i>Carte membre REED *
                                     </label>
-                                    <input type="file" class="form-control" id="carte_membre_reed" 
+                                    <input type="file" class="form-control form-control-sm" id="carte_membre_reed" 
                                            name="carte_membre_reed" accept=".pdf,.jpg,.jpeg,.png" required>
-                                    <small class="form-text text-muted">Carte de membre REED valide</small>
+                                    <small class="form-text text-muted d-block mt-1">Carte de membre REED valide</small>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="alert alert-info mt-4">
-                            <h5><i class="fas fa-info-circle me-2"></i>Important</h5>
-                            <ul class="mb-0">
-                                <li>Tous les champs marqués d'un * sont obligatoires</li>
-                                <li><strong>La CNI doit être recto-verso lisible</strong></li>
-                                <li>Votre demande sera traitée dans les 48 heures</li>
-                                <li>Vous recevrez une notification par email du résultat</li>
+                        <div class="alert alert-info mt-3">
+                            <h5 class="h6 mb-2"><i class="fas fa-info-circle me-2"></i>Important</h5>
+                            <ul class="mb-0 ps-3">
+                                <li class="mb-1">Tous les champs marqués d'un * sont obligatoires</li>
+                                <li class="mb-1"><strong>La CNI doit être recto-verso lisible</strong></li>
+                                <li class="mb-1">Votre demande sera traitée dans les 48 heures</li>
+                                <li class="mb-1">Vous recevrez une notification par email du résultat</li>
                                 <li>Les documents doivent être clairement lisibles</li>
                             </ul>
                         </div>
 
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
-                             <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                        <div class="progress d-none" id="progress-container">
+                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
                                 role="progressbar" style="width: 0%"></div>
-                                <p id="progress-text" class="text-center">Traitement en cours...</p>
-                            <button type="reset" class="btn btn-outline-secondary me-md-2">
-                                <i class="fas fa-undo me-2"></i>Effacer
+                        </div>
+                        <p id="progress-text" class="text-center d-none small mb-3">Traitement en cours...</p>
+
+                        <div class="d-flex flex-column flex-md-row gap-2 justify-content-end mt-4">
+                            <button type="reset" class="btn btn-outline-secondary order-2 order-md-1">
+                                <i class="fas fa-undo me-1"></i>Effacer
                             </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane me-2"></i>Soumettre la demande
+                            <button type="submit" class="btn btn-primary order-1 order-md-2" id="submit-btn">
+                                <i class="fas fa-paper-plane me-1"></i>Soumettre la demande
                             </button>
                         </div>
                     </form>
@@ -166,48 +174,69 @@
 
 {% block extra_js %}
 <script>
-
-document.getElementById('demandeForm').addEventListener('submit', function(e) {
-    // Montrer la progression
-    document.getElementById('progress-container').style.display = 'block';
-    document.getElementById('submit-btn').disabled = true;
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('demandeForm');
+    const submitBtn = document.getElementById('submit-btn');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
     
-    // Mettre à jour la barre de progression
-    let progress = 0;
-    const interval = setInterval(() => {
-        progress += 10;
-        if (progress <= 90) {
-            document.getElementById('progress-bar').style.width = progress + '%';
-        }
-    }, 500);
-    
-    // Stocker l'intervalle pour le nettoyer
-    this.dataset.progressInterval = interval;
-
-    const fileInputs = document.querySelectorAll('input[type="file"]');
-    let allFilesValid = true;
-    
-    fileInputs.forEach(input => {
-        if (input.files.length > 0) {
-            const file = input.files[0];
-            const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-            const maxSize = 16 * 1024 * 1024; // 16MB
-            
-            if (!validTypes.includes(file.type)) {
-                alert(`Le fichier ${input.name} doit être au format PDF, JPG ou PNG`);
-                allFilesValid = false;
+    form.addEventListener('submit', function(e) {
+        // Validation des fichiers
+        const fileInputs = form.querySelectorAll('input[type="file"]');
+        let allFilesValid = true;
+        
+        fileInputs.forEach(input => {
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                const maxSize = 16 * 1024 * 1024; // 16MB
+                
+                if (!validTypes.includes(file.type)) {
+                    alert(`❌ Le fichier ${input.previousElementSibling.textContent.trim()} doit être au format PDF, JPG ou PNG`);
+                    allFilesValid = false;
+                    e.preventDefault();
+                }
+                
+                if (file.size > maxSize) {
+                    alert(`⚠️ Le fichier ${input.previousElementSibling.textContent.trim()} est trop volumineux (max 16MB)`);
+                    allFilesValid = false;
+                    e.preventDefault();
+                }
             }
+        });
+        
+        if (allFilesValid) {
+            // Afficher la progression
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Traitement...';
+            progressContainer.classList.remove('d-none');
+            progressText.classList.remove('d-none');
             
-            if (file.size > maxSize) {
-                alert(`Le fichier ${input.name} est trop volumineux (max 16MB)`);
-                allFilesValid = false;
-            }
+            // Animation de progression
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                if (progress <= 90) {
+                    progressBar.style.width = progress + '%';
+                }
+            }, 300);
+            
+            // Nettoyer l'intervalle lors de la soumission
+            form.addEventListener('submit', function() {
+                clearInterval(interval);
+            }, { once: true });
         }
     });
     
-    if (!allFilesValid) {
-        e.preventDefault();
-    }
+    // Reset du formulaire
+    form.addEventListener('reset', function() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Soumettre la demande';
+        progressContainer.classList.add('d-none');
+        progressText.classList.add('d-none');
+        progressBar.style.width = '0%';
+    });
 });
 </script>
 {% endblock %}

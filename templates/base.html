@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{% block title %}Rassemblement des Élèves et Étudiants De Diamniadio{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
@@ -20,13 +20,13 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark main-nav">
         <div class="container">
-            <div class="image">
-                    <img src="{{ url_for('static', filename='logo.png')}}" alt="REED" width="50" height="50" class="rounded-circlr shadow"
-                         alt="Étudiants" class="img-fluid rounded">
-                </div>
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                 Rassemblement des Élèves et Étudiants De Diamniadio
-            </a>
+            <div class="d-flex align-items-center">
+                <img src="{{ url_for('static', filename='logo.png')}}" alt="REED" width="40" height="40" class="rounded-circle shadow me-2">
+                <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+                    <span class="d-none d-md-inline">Rassemblement des Élèves et Étudiants De Diamniadio</span>
+                    <span class="d-md-none">REED Diamniadio</span>
+                </a>
+            </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -34,17 +34,17 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('index') }}">
-                            <i class="fas fa-home"></i> Accueil
+                            <i class="fas fa-home me-1"></i>Accueil
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('formulaire') }}">
-                            <i class="fas fa-file-alt"></i> Formulaire
+                            <i class="fas fa-file-alt me-1"></i>Formulaire
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin_login') }}">
-                            <i class="fas fa-user-shield"></i> Admin
+                            <i class="fas fa-user-shield me-1"></i>Admin
                         </a>
                     </li>
                 </ul>
@@ -53,13 +53,13 @@
     </nav>
 
     <!-- Flash Messages -->
-    <div class="container mt-3">
+    <div class="container mt-2">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show mb-2">
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}
             {% endif %}
@@ -67,20 +67,20 @@
     </div>
 
     <!-- Main Content -->
-    <main>
+    <main class="pb-4">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="footer mt-5">
+    <footer class="footer py-4">
         <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5><i class="fas fa-users"></i> Amicale des Étudiants</h5>
-                    <p>Plateforme de gestion des demandes d'inscription</p>
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <h5 class="mb-2"><i class="fas fa-users me-2"></i>Amicale des Étudiants</h5>
+                    <p class="mb-0">Plateforme de gestion des demandes d'inscription</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p>&copy; 2024 Amicale des Étudiants. Tous droits réservés.</p>
+                    <p class="mb-0">&copy; 2024 Amicale des Étudiants. Tous droits réservés.</p>
                 </div>
             </div>
         </div>
