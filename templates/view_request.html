@@ -75,7 +75,7 @@
                             <i class="fas fa-graduation-cap fa-3x text-primary mb-3"></i>
                             <h6>Certificat d'inscription</h6>
                             {% if request.certificat_inscription %}
-                            <a href="{{ url_for('static', filename='uploads/' + request.certificat_inscription) }}" 
+                            <a href="{{ url_for('serve_uploaded_file', filename=request.certificat_inscription) }}" 
                                target="_blank" class="btn btn-sm btn-primary mt-2">
                                 <i class="fas fa-eye me-1"></i>Voir
                             </a>
@@ -86,28 +86,28 @@
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
-    <div class="card">
-        <div class="card-body text-center">
-            <i class="fas fa-id-card fa-3x text-primary mb-3"></i>
-            <h6> CNI</h6>
-            {% if request.copie_cni %}
-            <a href="{{ url_for('static', filename='uploads/' + request.copie_cni) }}" 
-               target="_blank" class="btn btn-sm btn-primary mt-2">
-                <i class="fas fa-eye me-1"></i>Voir
-            </a>
-            {% else %}
-            <span class="badge bg-danger">Non fourni</span>
-            {% endif %}
-        </div>
-    </div>
-</div>
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-id-card fa-3x text-primary mb-3"></i>
+                            <h6>CNI</h6>
+                            {% if request.copie_cni %}
+                            <a href="{{ url_for('serve_uploaded_file', filename=request.copie_cni) }}" 
+                               target="_blank" class="btn btn-sm btn-primary mt-2">
+                                <i class="fas fa-eye me-1"></i>Voir
+                            </a>
+                            {% else %}
+                            <span class="badge bg-danger">Non fourni</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
                 <div class="col-md-6 mb-3">
                     <div class="card">
                         <div class="card-body text-center">
                             <i class="fas fa-home fa-3x text-primary mb-3"></i>
                             <h6>Certificat de résidence</h6>
                             {% if request.certificat_residence %}
-                            <a href="{{ url_for('static', filename='uploads/' + request.certificat_residence) }}" 
+                            <a href="{{ url_for('serve_uploaded_file', filename=request.certificat_residence) }}" 
                                target="_blank" class="btn btn-sm btn-primary mt-2">
                                 <i class="fas fa-eye me-1"></i>Voir
                             </a>
@@ -123,7 +123,7 @@
                             <i class="fas fa-pen-fancy fa-3x text-primary mb-3"></i>
                             <h6>Demande manuscrite</h6>
                             {% if request.demande_manuscrite %}
-                            <a href="{{ url_for('static', filename='uploads/' + request.demande_manuscrite) }}" 
+                            <a href="{{ url_for('serve_uploaded_file', filename=request.demande_manuscrite) }}" 
                                target="_blank" class="btn btn-sm btn-primary mt-2">
                                 <i class="fas fa-eye me-1"></i>Voir
                             </a>
@@ -139,7 +139,7 @@
                             <i class="fas fa-address-card fa-3x text-primary mb-3"></i>
                             <h6>Carte membre REED</h6>
                             {% if request.carte_membre_reed %}
-                            <a href="{{ url_for('static', filename='uploads/' + request.carte_membre_reed) }}" 
+                            <a href="{{ url_for('serve_uploaded_file', filename=request.carte_membre_reed) }}" 
                                target="_blank" class="btn btn-sm btn-primary mt-2">
                                 <i class="fas fa-eye me-1"></i>Voir
                             </a>

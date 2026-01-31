@@ -9,7 +9,7 @@ services:
         generateValue: true
       - key: DATABASE_URL
         fromDatabase:
-          name: reed-db  # Votre base PostgreSQL sur Render
+          name: reed-db
           property: connectionString
       - key: SENDGRID_API_KEY
         sync: false
@@ -21,5 +21,5 @@ services:
         generateValue: true
     disk:
       name: uploads
-      mountPath: ./static/uploads
+      mountPath: /app/static/uploads  
       sizeGB: 1

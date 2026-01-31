@@ -1,6 +1,5 @@
 import os
 from datetime import timedelta
-import urllib.parse
 
 class Config:
     # Security
@@ -26,8 +25,8 @@ class Config:
         'pool_pre_ping': True,
     }
     
-    # Upload configuration
-    UPLOAD_FOLDER = 'static/uploads'
+    # Upload configuration - IMPORTANT: Chemin ABSOLU pour Render
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), 'static/uploads')  # Chemin absolu
     ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
     

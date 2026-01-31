@@ -1,7 +1,7 @@
 import os
 import time
 import threading
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, session, send_from_directory
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import io
@@ -21,6 +21,7 @@ app.config.from_object(Config)
 db.init_app(app)
 
 # Create necessary directories
+upload_folder = app.config['UPLOAD_FOLDER']
 os.makedirs('static/uploads', exist_ok=True)
 os.makedirs('instance', exist_ok=True)
 
@@ -294,6 +295,48 @@ def view_request(request_id):
     except Exception as e:
         flash('Demande non trouvée', 'error')
         return redirect(url_for('admin_dashboard'))
+
+@app.route('/uploads/<path:filename>')
+def serve_uploaded_file(filename):
+    """Servir les fichiers uploadés depuis le dossier d'uploads"""
+    try:
+        # Chemin sécurisé vers le fichier
+        upload_folder = app.config['UPLOAD_FOLDER']
+        file_path = os.path.join(upload_folder, filename)
+        
+        # Vérifier que le fichier existe et est dans le bon dossier
+        if not os.path.exists(file_path):
+            return "Fichier non trouvé", 404
+        
+        # Servir le fichier
+        return send_from_directory(upload_folder, filename)
+    except Exception as e:
+        print(f"Erreur serveur fichier: {str(e)}")
+        return "Erreur serveur", 500
+
+@app.route('/check-uploads')
+def check_uploads():
+    """Vérifier les fichiers dans le dossier uploads"""
+    upload_folder = app.config['UPLOAD_FOLDER']
+    files = []
+    
+    if os.path.exists(upload_folder):
+        for f in os.listdir(upload_folder):
+            filepath = os.path.join(upload_folder, f)
+            if os.path.isfile(filepath):
+                files.append({
+                    'name': f,
+                    'size': os.path.getsize(filepath),
+                    'path': filepath,
+                    'url': f'/uploads/{f}'
+                })
+    
+    return jsonify({
+        'upload_folder': upload_folder,
+        'exists': os.path.exists(upload_folder),
+        'files': files,
+        'total': len(files)
+    })
 
 @app.route('/admin/update_status/<int:request_id>', methods=['POST'])
 def update_status(request_id):
@@ -731,6 +774,9 @@ if __name__ == '__main__':
     print(f"Database: {app.config.get('SQLALCHEMY_DATABASE_URI', 'Non configurée')[:50]}...")
     print(f"SendGrid: {'✓ Configuré' if app.config['SENDGRID_API_KEY'] else '✗ Non configuré'}")
     print(f"Sender: {app.config['MAIL_DEFAULT_SENDER']}")
+    print("="*60 + "\n")
+    print(f"Upload folder: {app.config['UPLOAD_FOLDER']}")
+    print(f"Upload folder exists: {os.path.exists(app.config['UPLOAD_FOLDER'])}")
     print("="*60 + "\n")
     
     app.run(debug=True, host='0.0.0.0', port=5000)
