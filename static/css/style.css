@@ -8,6 +8,7 @@
     --dark-gray: #374151;
     --light-gray: #F3F4F6;
     --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+    --gradient-blue: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
 }
 
 /* Police améliorée pour la netteté */
@@ -20,6 +21,219 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+/* =========================== */
+/* BARRE DE NAVIGATION EN BLEU */
+/* =========================== */
+.bg-primary-blue {
+    background: var(--gradient-blue) !important;
+    box-shadow: 0 4px 20px rgba(30, 58, 138, 0.2);
+}
+
+.navbar {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand:hover {
+    opacity: 0.9;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    margin: 0 0.25rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.navbar-nav .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.navbar-nav .nav-link:active {
+    transform: translateY(0);
+}
+
+.navbar-nav .nav-link i {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+}
+
+.navbar-toggler {
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    padding: 0.5rem 0.75rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Menu déroulant sur mobile */
+@media (max-width: 992px) {
+    .navbar-collapse {
+        background: rgba(30, 58, 138, 0.95);
+        border-radius: 12px;
+        margin-top: 1rem;
+        padding: 1rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .navbar-nav .nav-link {
+        margin: 0.25rem 0;
+        padding: 0.75rem 1rem !important;
+        border-radius: 8px;
+    }
+}
+
+/* ==================== */
+/* FOOTER EN BLEU */
+/* ==================== */
+.footer {
+    background: var(--gradient-blue) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-yellow);
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+.footer h5 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.5rem;
+}
+
+.footer h5::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: var(--primary-yellow);
+    border-radius: 2px;
+}
+
+.footer p, .footer small {
+    opacity: 0.9;
+}
+
+.footer .opacity-75 {
+    opacity: 0.85;
+}
+
+.footer .border-top {
+    border-top-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.footer i {
+    color: var(--primary-yellow);
+}
+
+.footer a {
+    color: var(--light-yellow);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.footer a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+/* Effet de vague optionnel */
+.footer-wave {
+    position: absolute;
+    top: -50px;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='%231e3a8a'%3E%3C/path%3E%3C/svg%3E");
+    background-size: cover;
+    background-position: center;
+}
+
+/* =========================== */
+/* AMÉLIORATIONS RESPONSIVES */
+/* =========================== */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+    
+    .footer {
+        text-align: center;
+    }
+    
+    .footer h5::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .footer .text-md-end {
+        text-align: center !important;
+    }
+    
+    .footer small span.mx-2 {
+        display: block;
+        margin: 0.5rem 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar-brand span.d-none.d-md-inline {
+        display: none !important;
+    }
+    
+    .navbar-brand span.d-md-none {
+        display: inline !important;
+    }
+    
+    .footer {
+        padding: 2rem 0 !important;
+    }
+    
+    .footer h5 {
+        font-size: 1.1rem;
+    }
+}
+
+/* Animation pour la navbar au scroll */
+.navbar-scrolled {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================== */
+/* RESTE DU CSS EXISTANT */
+/* =========================== */
 
 /* Améliorations pour la section Process Steps */
 .process-steps {
@@ -275,6 +489,10 @@ body {
 
 /* Support pour mode sombre amélioré */
 @media (prefers-color-scheme: dark) {
+    .bg-primary-blue, .footer {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+    }
+    
     .process-step:not(:last-child):after {
         background: linear-gradient(to bottom, #334155, transparent);
     }

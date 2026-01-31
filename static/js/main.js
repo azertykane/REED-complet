@@ -1,7 +1,34 @@
 // static/js/main.js - Version corrigée
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Application REED chargée');
+    // Animation de la navbar au scroll
+window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 50) {
+        navbar.classList.add('navbar-scrolled');
+    } else {
+        navbar.classList.remove('navbar-scrolled');
+    }
+});
+
+// Animation pour les liens de la navbar
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+    });
     
+    link.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+    });
+});
+
+// Animation pour le bouton de menu mobile
+const navbarToggler = document.querySelector('.navbar-toggler');
+if (navbarToggler) {
+    navbarToggler.addEventListener('click', function() {
+        this.classList.toggle('active');
+    });
+}
     // Formattage des numéros de téléphone
     const phoneInputs = document.querySelectorAll('input[type="tel"]');
     phoneInputs.forEach(input => {
