@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Informations - Amicale des Étudiants{% endblock %}
+{% block title %}Informations - REED{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -368,7 +368,6 @@
                             <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Wi-Fi haute vitesse</li>
                             <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Sécurité 24/7</li>
                             <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Espaces communs</li>
-                            <li><i class="fas fa-check-circle text-success me-2"></i>Prix étudiants avantageux</li>
                         </ul>
                     </div>
                 </div>
@@ -493,7 +492,7 @@
                 <p class="lead text-muted">Découvrez notre sélection d'appartements pour étudiants</p>
                 <div class="alert alert-info d-inline-flex align-items-center">
                     <i class="fas fa-star me-2"></i>
-                    Réservé exclusivement aux membres inscrits
+                    Réservé exclusivement aux résidents
                 </div>
             </div>
         </div>
@@ -504,7 +503,7 @@
                 <div class="apartment-card">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
-                            <h4 class="fw-bold mb-1">Studio Élégant</h4>
+                            <h4 class="fw-bold mb-1">logements</h4>
                             <p class="text-muted mb-0"><i class="fas fa-map-marker-alt me-1"></i> Quartier Universitaire</p>
                         </div>
                         <span class="badge bg-success fs-6">Disponible</span>
@@ -514,15 +513,13 @@
                         <img src="https://images.unsplash.com/photo-1558036117-15e82a2c9a9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
                              alt="Studio" class="img-fluid rounded" style="height: 200px; width: 100%; object-fit: cover;">
                         <div class="position-absolute bottom-0 start-0 bg-primary text-white px-3 py-1 rounded-end">
-                            <strong>35 000 FCFA/mois</strong>
                         </div>
                     </div>
                     
-                    <p class="text-muted mb-3">Studio entièrement meublé avec kitchenette, salle de bain privée et balcon.</p>
+                    <p class="text-muted mb-3">Chambres Simples, hambres avec salle de bain.</p>
                     
                     <div class="apartment-features">
-                        <span class="feature-badge"><i class="fas fa-ruler-combined"></i> 25 m²</span>
-                        <span class="feature-badge"><i class="fas fa-bed"></i> 1</span>
+                        <span class="feature-badge"><i class="fas fa-bed"></i> 7</span>
                         <span class="feature-badge"><i class="fas fa-wifi"></i> Wi-Fi</span>
                     </div>
                     
@@ -531,83 +528,6 @@
                     </button>
                 </div>
             </div>
-            
-            <!-- Appartement 2 -->
-            <div class="col-md-6 col-lg-4 scroll-reveal">
-                <div class="apartment-card">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h4 class="fw-bold mb-1">Appartement T2</h4>
-                            <p class="text-muted mb-0"><i class="fas fa-map-marker-alt me-1"></i> Centre-ville</p>
-                        </div>
-                        <span class="badge bg-warning text-dark fs-6">Bientôt disponible</span>
-                    </div>
-                    
-                    <div class="position-relative mb-3">
-                        <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                             alt="Appartement T2" class="img-fluid rounded" style="height: 200px; width: 100%; object-fit: cover;">
-                        <div class="position-absolute bottom-0 start-0 bg-primary text-white px-3 py-1 rounded-end">
-                            <strong>55 000 FCFA/mois</strong>
-                        </div>
-                    </div>
-                    
-                    <p class="text-muted mb-3">Appartement 2 pièces avec séjour, cuisine équipée et 2 balcons.</p>
-                    
-                    <div class="apartment-features">
-                        <span class="feature-badge"><i class="fas fa-ruler-combined"></i> 45 m²</span>
-                        <span class="feature-badge"><i class="fas fa-bed"></i> 2</span>
-                        <span class="feature-badge"><i class="fas fa-tv"></i> TV</span>
-                        <span class="feature-badge"><i class="fas fa-wifi"></i> Wi-Fi</span>
-                    </div>
-                    
-                    <button class="btn btn-outline-primary w-100 mt-3" onclick="showInterest(2)">
-                        <i class="fas fa-bell me-2"></i>Être notifié
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Appartement 3 -->
-            <div class="col-md-6 col-lg-4 scroll-reveal">
-                <div class="apartment-card">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h4 class="fw-bold mb-1">Colocation Moderne</h4>
-                            <p class="text-muted mb-0"><i class="fas fa-map-marker-alt me-1"></i> Campus Principal</p>
-                        </div>
-                        <span class="badge bg-success fs-6">Disponible</span>
-                    </div>
-                    
-                    <div class="position-relative mb-3">
-                        <img src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                             alt="Colocation" class="img-fluid rounded" style="height: 200px; width: 100%; object-fit: cover;">
-                        <div class="position-absolute bottom-0 start-0 bg-primary text-white px-3 py-1 rounded-end">
-                            <strong>25 000 FCFA/pers</strong>
-                        </div>
-                    </div>
-                    
-                    <p class="text-muted mb-3">Colocation de 3 chambres avec salon spacieux et cuisine entièrement équipée.</p>
-                    
-                    <div class="apartment-features">
-                        <span class="feature-badge"><i class="fas fa-ruler-combined"></i> 75 m²</span>
-                        <span class="feature-badge"><i class="fas fa-bed"></i> 3</span>
-                        <span class="feature-badge"><i class="fas fa-car"></i> Parking</span>
-                        <span class="feature-badge"><i class="fas fa-dumbbell"></i> Gym</span>
-                    </div>
-                    
-                    <button class="btn btn-primary w-100 mt-3" onclick="showInterest(3)">
-                        <i class="fas fa-heart me-2"></i>Exprimer son intérêt
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="text-center mt-5">
-            <button class="btn btn-outline-primary btn-lg" onclick="showMoreApartments()">
-                <i class="fas fa-plus me-2"></i>Voir plus d'options
-            </button>
-        </div>
-    </div>
-</section>
 
 <!-- Section Inscription pour accéder aux appartements -->
 <section id="registrationSection" class="py-5">
@@ -629,11 +549,6 @@
                         </p>
                         
                         <div class="row g-3 justify-content-center">
-                            <div class="col-md-6">
-                                <a href="{{ url_for('formulaire') }}" class="btn btn-primary btn-lg w-100 py-3" id="registerBtn">
-                                    <i class="fas fa-user-plus me-2"></i>S'inscrire maintenant
-                                </a>
-                            </div>
                             <div class="col-md-6">
                                 <button class="btn btn-outline-secondary btn-lg w-100 py-3" onclick="simulateRegistration()">
                                     <i class="fas fa-eye me-2"></i>Voir un aperçu
