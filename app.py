@@ -221,15 +221,14 @@ def send_confirmation_email(to_email, nom, prenom, request_id):
     subject = "Confirmation de réception de votre demande"
     message = f"""Cher(e) {prenom} {nom},
 
-Nous accusons réception de votre demande d'adhésion à l'Amicale des Étudiants (N°{request_id}).
+Nous accusons réception de votre demande de logement au sein des appartements du REED.
 
 Votre dossier est en cours de traitement et vous serez notifié(e) par email dès qu'une décision sera prise.
 
-Nous vous remercions pour votre confiance.
+Nous vous remercions pour votre confiance et n'oubliez pas de consulter vos emails section Spam.
 
 Cordialement,
 La Commission Sociale REED
-Amicale des Étudiants
 """
     
     try:
@@ -398,26 +397,26 @@ def send_status_email(student, status, notes):
         return
     
     if status == 'approved':
-        subject = "Félicitations ! Votre demande d'adhésion a été acceptée"
+        subject = "Félicitations ! Votre demande de logement a été acceptée"
         message = f"""Cher(e) {student.prenom} {student.nom},
 
-Nous avons le plaisir de vous informer que votre demande d'adhésion à l'Amicale des Étudiants (ID: {student.id}) a été approuvée.
+Nous avons le plaisir de vous informer que votre demande de logement au sein des appartements du REED a été approuvée.
 
 Bienvenue dans notre communauté !
 
 """
     elif status == 'rejected':
-        subject = "Décision concernant votre demande d'adhésion"
+        subject = "Décision concernant votre demande de logement"
         message = f"""Cher(e) {student.prenom} {student.nom},
 
-Après examen de votre demande d'adhésion (ID: {student.id}), nous regrettons de vous informer qu'elle n'a pas pu être acceptée pour le moment.
+Après examen de votre demande de logement du (ID: {student.de}), nous regrettons de vous informer qu'elle n'a pas pu être acceptée pour le moment.
 
 """
     else:
-        subject = "Mise à jour sur votre demande d'adhésion"
+        subject = "Mise à jour sur votre demande de logement"
         message = f"""Cher(e) {student.prenom} {student.nom},
 
-Votre demande d'adhésion (ID: {student.id}) est actuellement en cours de traitement par notre équipe.
+Votre demande de logement du (ID: {student.date}) est actuellement en cours de traitement par notre équipe.
 
 Nous vous contacterons dès que nous aurons une décision.
 
@@ -431,7 +430,6 @@ Merci pour votre compréhension.
 
 Cordialement,
 La Commission Sociale REED
-Amicale des Étudiants
 """
     
     try:
