@@ -125,9 +125,10 @@ def formulaire():
             adresse = request.form.get('adresse', '').strip()
             telephone = request.form.get('telephone', '').strip()
             email = request.form.get('email', '').strip().lower()
+            region_universitaire = request.form.get('region_universitaire', 'Dakar').strip()
             
             # Validate required fields
-            if not all([nom, prenom, adresse, telephone, email]):
+            if not all([nom, prenom, adresse, telephone, email, region_universitaire]):
                 flash('Tous les champs sont obligatoires', 'error')
                 return redirect(url_for('formulaire'))
             
@@ -148,7 +149,9 @@ def formulaire():
                 adresse=adresse,
                 telephone=telephone,
                 email=email,
+                region_universitaire=region_universitaire,
                 status='pending'
+                
             )
             
             # Handle file uploads
@@ -206,8 +209,12 @@ def formulaire():
             print(f"Erreur lors de la soumission: {str(e)}")
             flash('Une erreur est survenue. Veuillez réessayer.', 'error')
             return redirect(url_for('formulaire'))
-    
-    return render_template('form.html')
+    regions_universitaires = [
+        'Dakar', 'Thiès', 'Saint-Louis', 'Ziguinchor', 'Kolda',
+        'Tambacounda', 'Kaolack', 'Fatick', 'Diourbel', 'Louga',
+        'Matam', 'Kédougou', 'Sédhiou'
+    ]
+    return render_template('form.html', regions_universitaires=regions_universitaires)
 
 def send_confirmation_email(to_email, nom, prenom, request_id):
     """Envoyer un email de confirmation à l'étudiant"""
@@ -270,11 +277,23 @@ def admin_dashboard():
         approved_count = StudentRequest.query.filter_by(status='approved').count()
         rejected_count = StudentRequest.query.filter_by(status='rejected').count()
         
+        # NOUVEAU: Statistiques par région
+        regions_stats = {}
+        regions = StudentRequest.query.with_entities(
+            StudentRequest.region_universitaire,
+            db.func.count(StudentRequest.id).label('count')
+        ).group_by(StudentRequest.region_universitaire).all()
+        
+        for region, count in regions:
+            regions_stats[region] = count
+        
         return render_template('admin_dashboard.html', 
                              requests=requests,
                              pending_count=pending_count,
                              approved_count=approved_count,
-                             rejected_count=rejected_count)
+                             rejected_count=rejected_count,
+                             regions_stats=regions_stats)  # NOUVEAU
+        
     except Exception as e:
         print(f"Erreur dashboard: {str(e)}")
         flash('Erreur de chargement du tableau de bord', 'error')
@@ -282,7 +301,8 @@ def admin_dashboard():
                              requests=[],
                              pending_count=0,
                              approved_count=0,
-                             rejected_count=0)
+                             rejected_count=0,
+                             regions_stats={})
 
 @app.route('/admin/view/<int:request_id>')
 def view_request(request_id):
@@ -729,6 +749,163 @@ def api_stats():
         return jsonify(stats)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/admin/delete_request/<int:request_id>', methods=['POST'])
+def delete_request(request_id):
+    """Supprimer une demande"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Non autorisé'}), 401
+    
+    try:
+        # Récupérer la demande
+        student_request = StudentRequest.query.get_or_404(request_id)
+        
+        # Supprimer les fichiers associés
+        files_to_delete = [
+            student_request.certificat_inscription,
+            student_request.certificat_residence,
+            student_request.demande_manuscrite,
+            student_request.carte_membre_reed,
+            student_request.copie_cni
+        ]
+        
+        for filename in files_to_delete:
+            if filename:
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                if os.path.exists(filepath):
+                    try:
+                        os.remove(filepath)
+                        print(f"✓ Fichier supprimé: {filename}")
+                    except Exception as e:
+                        print(f"✗ Erreur suppression fichier {filename}: {str(e)}")
+        
+        # Supprimer de la base de données
+        db.session.delete(student_request)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Demande #{request_id} supprimée avec succès'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# AJOUTER: Route pour supprimer plusieurs demandes
+@app.route('/admin/delete_requests', methods=['POST'])
+def delete_requests():
+    """Supprimer plusieurs demandes"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Non autorisé'}), 401
+    
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'Données JSON requises'}), 400
+        
+        request_ids = data.get('request_ids', [])
+        
+        if not request_ids:
+            return jsonify({'error': 'Aucune demande sélectionnée'}), 400
+        
+        deleted_count = 0
+        error_count = 0
+        
+        for request_id in request_ids:
+            try:
+                student_request = StudentRequest.query.get(request_id)
+                if student_request:
+                    # Supprimer les fichiers
+                    files_to_delete = [
+                        student_request.certificat_inscription,
+                        student_request.certificat_residence,
+                        student_request.demande_manuscrite,
+                        student_request.carte_membre_reed,
+                        student_request.copie_cni
+                    ]
+                    
+                    for filename in files_to_delete:
+                        if filename:
+                            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                            if os.path.exists(filepath):
+                                os.remove(filepath)
+                    
+                    # Supprimer de la base
+                    db.session.delete(student_request)
+                    deleted_count += 1
+                    
+            except Exception as e:
+                error_count += 1
+                print(f"Erreur suppression demande {request_id}: {str(e)}")
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'{deleted_count} demande(s) supprimée(s)',
+            'deleted_count': deleted_count,
+            'error_count': error_count
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# AJOUTER: Route pour vider toutes les demandes (optionnel - attention)
+@app.route('/admin/delete_all_requests', methods=['POST'])
+def delete_all_requests():
+    """Supprimer toutes les demandes (ATTENTION: action irréversible)"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Non autorisé'}), 401
+    
+    try:
+        # Vérifier la confirmation
+        data = request.get_json()
+        if not data or not data.get('confirm'):
+            return jsonify({'error': 'Confirmation requise'}), 400
+        
+        # Récupérer toutes les demandes
+        all_requests = StudentRequest.query.all()
+        deleted_count = 0
+        
+        for student_request in all_requests:
+            try:
+                # Supprimer les fichiers
+                files_to_delete = [
+                    student_request.certificat_inscription,
+                    student_request.certificat_residence,
+                    student_request.demande_manuscrite,
+                    student_request.carte_membre_reed,
+                    student_request.copie_cni
+                ]
+                
+                for filename in files_to_delete:
+                    if filename:
+                        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        if os.path.exists(filepath):
+                            os.remove(filepath)
+                
+                # Supprimer de la base
+                db.session.delete(student_request)
+                deleted_count += 1
+                
+            except Exception as e:
+                print(f"Erreur suppression demande {student_request.id}: {str(e)}")
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Toutes les demandes ({deleted_count}) ont été supprimées',
+            'deleted_count': deleted_count
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/debug')
 def debug():

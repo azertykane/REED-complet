@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Composer Email - Amicale des Étudiants{% endblock %}
+{% block title %}Composer Email - REED{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -86,7 +86,7 @@
                         <div class="mb-3">
                             <label class="form-label">Sujet *</label>
                             <input type="text" class="form-control" id="subject" required 
-                                   placeholder="Ex: Résultat de votre demande d'adhésion">
+                                   placeholder="Ex: Résultat de votre demande de logement">
                         </div>
 
                         <div class="mb-3">
@@ -382,67 +382,74 @@ function loadTemplate(templateType) {
     
     switch(templateType) {
         case 'acceptance':
-            subject = 'Félicitations ! Votre demande d\'adhésion a été acceptée';
+            subject = 'Félicitations ! Votre demande de logement a été acceptée';
             message = `Cher(e) {prenom} {nom},
 
-Nous avons le plaisir de vous informer que votre demande d'adhésion à l'Amicale des Étudiants (ID: {id}) a été approuvée.
+Nous avons le plaisir de vous informer que votre demande de logement dans les appartement du REED (ID: {id}) a été approuvée.
 
-Bienvenue dans notre communauté !
+Bienvenue dans notre communauté, Veuillez contacter la commission sociale et environnemental!
+Président de la commission: 773961004, 
 
 Cordialement,
-L'équipe de l'Amicale des Étudiants`;
+La commission sociale et environnemental du REED`;
             break;
             
         case 'rejection':
-            subject = 'Décision concernant votre demande d\'adhésion';
+            subject = 'Décision concernant votre demande de logement';
             message = `Cher(e) {prenom} {nom},
 
-Après examen de votre demande d'adhésion (ID: {id}), nous regrettons de vous informer qu'elle n'a pas pu être acceptée pour le moment.
+Après examen de votre demande de logement (ID: {date}), nous regrettons de vous informer qu'elle n'a pas pu être acceptée pour le moment.
 
-Nous vous remercions de votre intérêt et vous souhaitons bonne continuation.
+Nous vous remercions de votre intérêt et vous informe que vous etes sur la liste d'attente!.
+Veuillez contacter la commission sociale et environnemental pour plus d'information
+Président de la commission: 773961004,
 
 Cordialement,
-L'équipe de l'Amicale des Étudiants`;
+La commission sociale et environnemental du REED`;
             break;
             
         case 'pending':
-            subject = 'Mise à jour sur votre demande d\'adhésion';
+            subject = 'Mise à jour sur votre demande de logement';
             message = `Cher(e) {prenom} {nom},
 
-Votre demande d'adhésion (ID: {id}) est actuellement en cours de traitement par notre équipe.
+Votre demande de logement (ID: {date}) est actuellement en cours de traitement par notre équipe.
 
 Nous vous contacterons dès que nous aurons une décision.
 
 Merci pour votre patience.
+Veuillez contacter la commission sociale et environnemental pour plus d'information
+Président de la commission: 773961004,
 
 Cordialement,
-L'équipe de l'Amicale des Étudiants`;
+La commission sociale et environnemental du REED`;
             break;
             
         case 'reminder':
             subject = 'Rappel : Documents manquants pour votre demande';
             message = `Cher(e) {prenom} {nom},
 
-Nous avons remarqué que certains documents requis pour votre demande d'adhésion (ID: {id}) sont manquants.
+Nous avons remarqué que certains documents requis pour votre demande de logement (ID: {date}) sont manquants.
 
 Veuillez les fournir dans les plus brefs délais pour permettre le traitement de votre dossier.
+Veuillez contacter la commission sociale et environnemental pour plus d'information
+Président de la commission: 773961004,
 
 Cordialement,
-L'équipe de l'Amicale des Étudiants`;
+La commission sociale et environnemental du REED`;
             break;
             
         case 'welcome':
-            subject = 'Bienvenue à l\'Amicale des Étudiants !';
+            subject = 'Bienvenue sur la plateforme REED-Loge !';
             message = `Cher(e) {prenom} {nom},
 
-Bienvenue à l'Amicale des Étudiants !
+Bienvenue au Rassemblement des Eleves et Etudiants de Diamniadio  !
 
-Nous sommes ravis de vous accueillir parmi nous. En tant que nouveau membre, vous avez désormais accès à tous nos avantages et événements.
+Nous sommes ravis de vous accueillir parmi nous. En tant que nouveau membre.
 
 N'hésitez pas à nous contacter si vous avez des questions.
 
 Cordialement,
-L'équipe de l'Amicale des Étudiants`;
+La commission sociale et environnemental du REED`;
             break;
     }
     
@@ -527,11 +534,9 @@ async function sendEmail() {
         return;
     }
     
-    // Montrer un indicateur de chargement
-    const sendBtn = document.querySelector('button[onclick="sendEmail()"]');
-    const originalText = sendBtn.innerHTML;
-    sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Envoi en cours...';
-    sendBtn.disabled = true;
+    if (!confirm(`Êtes-vous sûr de vouloir envoyer cet email ?`)) {
+        return;
+    }
     
     try {
         const response = await fetch('/admin/send_email', {
@@ -548,28 +553,16 @@ async function sendEmail() {
             })
         });
         
-        // Vérifier si la réponse est valide
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const result = await response.json();
         
-        const text = await response.text();
-        let result;
-        
-        try {
-            result = JSON.parse(text);
-        } catch (jsonError) {
-            console.error('Erreur JSON:', jsonError);
-            throw new Error('Réponse serveur invalide');
-        }
-        
-        if (result.success) {
-            alert(result.message || 'Envoi d\'emails lancé avec succès!');
+        if (response.ok) {
+            alert(result.message || 'Email(s) envoyé(s) avec succès!');
             
             // Reset form
             document.getElementById('emailForm').reset();
             selectedStudents = [];
             updateRecipientDisplay();
+            loadEmailHistory();
             
             // Close preview modal if open
             const modal = bootstrap.Modal.getInstance(document.getElementById('previewModal'));
@@ -578,12 +571,7 @@ async function sendEmail() {
             alert('Erreur: ' + (result.error || 'Échec de l\'envoi'));
         }
     } catch (error) {
-        console.error('Erreur complète:', error);
-        alert('Erreur lors de l\'envoi: ' + error.message);
-    } finally {
-        // Restaurer le bouton
-        sendBtn.innerHTML = originalText;
-        sendBtn.disabled = false;
+        alert('Erreur: ' + error);
     }
 }
 

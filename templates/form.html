@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Formulaire de Demande - Amicale des Étudiants{% endblock %}
+{% block title %}Formulaire de Demande de logement dans les appartements du REED{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -36,8 +36,8 @@
     <div class="container">
         <div class="row">
             <div class="col-12 text-center">
-                <h1 class="h3 fw-bold mb-2">Formulaire d'Inscription</h1>
-                <p class="lead mb-0">Remplissez ce formulaire pour faire une demande d'adhésion</p>
+                <h1 class="h3 fw-bold mb-2">Formulaire de demande de logement</h1>
+                <p class="lead mb-0">Remplissez ce formulaire pour faire une demande de logement</p>
             </div>
         </div>
     </div>
@@ -74,6 +74,17 @@
                                 <label for="email" class="form-label fw-semibold">Email *</label>
                                 <input type="email" class="form-control" id="email" name="email" required>
                             </div>
+                            <div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <label for="region_universitaire" class="form-label">Région universitaire *</label>
+        <select class="form-select" id="region_universitaire" name="region_universitaire" required>
+            <option value="">Sélectionnez votre région...</option>
+            {% for region in regions_universitaires %}
+            <option value="{{ region }}">{{ region }}</option>
+            {% endfor %}
+        </select>
+        <small class="form-text text-muted">Région où vous étudiez</small>
+    </div>
                         </div>
 
                         <hr class="my-4">
@@ -81,17 +92,17 @@
                         <h3 class="h5 mb-3 text-primary">
                             <i class="fas fa-file-upload me-2"></i>Documents à fournir
                         </h3>
-                        <p class="text-muted mb-3">Tous les documents doivent être au format PDF, JPG ou PNG (max 16MB)</p>
+                        <p class="text-muted mb-3">Tous les documents doivent être au format PDF (max 16MB)</p>
 
                         <div class="row">
                             <!-- Ligne 1 -->
                             <div class="col-12 col-md-6 col-lg-4 mb-3">
                                 <div class="document-upload">
                                     <label for="certificat_inscription" class="form-label fw-semibold">
-                                        <i class="fas fa-graduation-cap me-1"></i>Certificat d'inscription *
+                                        <i class="fas fa-graduation-cap me-1"></i>Certificat d'inscription ou carte etudiante valide *
                                     </label>
                                     <input type="file" class="form-control form-control-sm" id="certificat_inscription" 
-                                           name="certificat_inscription" accept=".pdf,.jpg,.jpeg,.png" required>
+                                           name="certificat_inscription" accept=".pdf" required>
                                     <small class="form-text text-muted d-block mt-1">Document prouvant votre statut étudiant</small>
                                 </div>
                             </div>
@@ -101,7 +112,7 @@
                                         <i class="fas fa-home me-1"></i>Certificat de résidence *
                                     </label>
                                     <input type="file" class="form-control form-control-sm" id="certificat_residence" 
-                                           name="certificat_residence" accept=".pdf,.jpg,.jpeg,.png" required>
+                                           name="certificat_residence" accept=".pdf" required>
                                     <small class="form-text text-muted d-block mt-1">Justificatif de domicile</small>
                                 </div>
                             </div>
@@ -111,7 +122,7 @@
                                         <i class="fas fa-id-card me-1"></i>Copie de la CNI *
                                     </label>
                                     <input type="file" class="form-control form-control-sm" id="copie_cni" 
-                                           name="copie_cni" accept=".pdf,.jpg,.jpeg,.png" required>
+                                           name="copie_cni" accept=".pdf" required>
                                     <small class="form-text text-muted d-block mt-1">Carte Nationale d'Identité recto-verso</small>
                                 </div>
                             </div>
@@ -123,7 +134,7 @@
                                         <i class="fas fa-pen-fancy me-1"></i>Demande manuscrite *
                                     </label>
                                     <input type="file" class="form-control form-control-sm" id="demande_manuscrite" 
-                                           name="demande_manuscrite" accept=".pdf,.jpg,.jpeg,.png" required>
+                                           name="demande_manuscrite" accept=".pdf" required>
                                     <small class="form-text text-muted d-block mt-1">Lettre manuscrite de motivation</small>
                                 </div>
                             </div>
@@ -133,7 +144,7 @@
                                         <i class="fas fa-address-card me-1"></i>Carte membre REED *
                                     </label>
                                     <input type="file" class="form-control form-control-sm" id="carte_membre_reed" 
-                                           name="carte_membre_reed" accept=".pdf,.jpg,.jpeg,.png" required>
+                                           name="carte_membre_reed" accept=".pdf" required>
                                     <small class="form-text text-muted d-block mt-1">Carte de membre REED valide</small>
                                 </div>
                             </div>
@@ -144,9 +155,9 @@
                             <ul class="mb-0 ps-3">
                                 <li class="mb-1">Tous les champs marqués d'un * sont obligatoires</li>
                                 <li class="mb-1"><strong>La CNI doit être recto-verso lisible</strong></li>
-                                <li class="mb-1">Votre demande sera traitée dans les 48 heures</li>
+                                <li class="mb-1">Votre demande sera traitée au lendemain de fermeture des dépots</li>
                                 <li class="mb-1">Vous recevrez une notification par email du résultat</li>
-                                <li>Les documents doivent être clairement lisibles</li>
+                                <li>Les documents doivent scannés et convertisen pdf</li>
                             </ul>
                         </div>
 

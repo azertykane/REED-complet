@@ -42,6 +42,11 @@
                     <p class="fs-5">{{ request.email }}</p>
                 </div>
                 <div class="col-md-6 mb-3">
+    <label class="form-label text-muted">Région universitaire</label>
+    <p class="fs-5">{{ request.region_universitaire }}</p>
+</div>
+
+                <div class="col-md-6 mb-3">
                     <label class="form-label text-muted">Statut</label>
                     <p>
                         {% if request.status == 'pending' %}
