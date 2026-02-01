@@ -289,6 +289,19 @@
         opacity: 1;
         transform: translateY(0);
     }
+    
+    /* Badge pour utilisateur inscrit */
+    .user-badge {
+        background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--secondary-yellow) 100%);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+    }
 </style>
 {% endblock %}
 
@@ -301,17 +314,30 @@
         </div>
         <h1 class="display-4 fw-bold mb-3 animate-fade-in">Informations Pratiques</h1>
         <p class="lead mb-0 animate-fade-in animate-delay-1">Tout ce que vous devez savoir sur l'accompagnement, le logement et la vie étudiante</p>
+        
+        {% if est_inscrit %}
+        <div class="mt-4 animate-fade-in animate-delay-2">
+            <div class="user-badge">
+                <i class="fas fa-crown"></i>
+                <span>Membre Privilégié - Accès Complet</span>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
-<!-- Message de confirmation (caché par défaut) -->
-<div id="confirmationMessage" class="alert alert-success alert-dismissible fade show mb-0 text-center" style="display: none;">
-    <div class="container">
-        <i class="fas fa-check-circle fa-2x me-3"></i>
-        <strong>Inscription réussie !</strong> Vous pouvez maintenant accéder à la liste complète des appartements disponibles.
-        <button type="button" class="btn-close" onclick="hideConfirmation()"></button>
+<!-- Message de confirmation (afficher seulement si flash message existe) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages if category == 'success' %}
+    <div id="confirmationMessage" class="alert alert-success alert-dismissible fade show mb-0 text-center">
+        <div class="container">
+            <i class="fas fa-check-circle fa-2x me-3"></i>
+            <strong>{{ message }}</strong>
+            <button type="button" class="btn-close" onclick="hideConfirmation()"></button>
+        </div>
     </div>
-</div>
+    {% endfor %}
+{% endwith %}
 
 <!-- Section des 3 images -->
 <section class="py-5">
@@ -328,7 +354,7 @@
             <div class="col-lg-4 animate-fade-in">
                 <div class="info-card">
                     <div class="card-image">
-                        <img src="/static/acommpagnement.jpeg" alt="Accompagnement scolaire">
+                        <img src="/static/acommpagnement.jpeg" alt="Accompagnement scolaire" onerror="this.src='https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'">
                         <div class="image-overlay">
                             <h3 class="h4 fw-bold mb-0">Accompagnement Scolaire</h3>
                         </div>
@@ -352,8 +378,8 @@
             <!-- Carte 2 : Logement Étudiant -->
             <div class="col-lg-4 animate-fade-in animate-delay-1">
                 <div class="info-card">
-                    <div class="card-image">80
-                        <img src="/static/sociale.jpeg" alt="Logement étudiant">
+                    <div class="card-image">
+                        <img src="/static/sociale.jpeg" alt="Logement étudiant" onerror="this.src='https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'">
                         <div class="image-overlay">
                             <h3 class="h4 fw-bold mb-0">Logement Étudiant</h3>
                         </div>
@@ -484,7 +510,7 @@
 </section>
 
 <!-- Section des Appartements (visible après inscription) -->
-<section id="apartmentsSection" class="py-5 apartments-section" style="display: none;">
+<section id="apartmentsSection" class="py-5 apartments-section" style="{% if not est_inscrit %}display: none;{% endif %}">
     <div class="container">
         <div class="row mb-5">
             <div class="col-12 text-center">
@@ -503,7 +529,7 @@
                 <div class="apartment-card">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
-                            <h4 class="fw-bold mb-1">logements</h4>
+                            <h4 class="fw-bold mb-1">Chambres Étudiantes</h4>
                             <p class="text-muted mb-0"><i class="fas fa-map-marker-alt me-1"></i> Quartier Universitaire</p>
                         </div>
                         <span class="badge bg-success fs-6">Disponible</span>
@@ -513,14 +539,16 @@
                         <img src="https://images.unsplash.com/photo-1558036117-15e82a2c9a9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
                              alt="Studio" class="img-fluid rounded" style="height: 200px; width: 100%; object-fit: cover;">
                         <div class="position-absolute bottom-0 start-0 bg-primary text-white px-3 py-1 rounded-end">
+                            <strong>À partir de 35 000 FCFA/mois</strong>
                         </div>
                     </div>
                     
-                    <p class="text-muted mb-3">Chambres Simples, chambres avec salle de bain.</p>
+                    <p class="text-muted mb-3">Chambres simples et chambres avec salle de bain privée. Idéal pour les étudiants.</p>
                     
                     <div class="apartment-features">
-                        <span class="feature-badge"><i class="fas fa-bed"></i> 7</span>
-                        <span class="feature-badge"><i class="fas fa-wifi"></i> Wi-Fi</span>
+                        <span class="feature-badge"><i class="fas fa-bed"></i>  lits</span>
+                        <span class="feature-badge"><i class="fas fa-wifi"></i> Wi-Fi inclus</span>
+                        <span class="feature-badge"><i class="fas fa-utensils"></i> Cuisine commune</span>
                     </div>
                     
                     <button class="btn btn-primary w-100 mt-3" onclick="showInterest(1)">
@@ -528,8 +556,78 @@
                     </button>
                 </div>
             </div>
+            
+            <!-- Appartement 2 -->
+            <div class="col-md-6 col-lg-4 scroll-reveal">
+                <div class="apartment-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h4 class="fw-bold mb-1">Studios Modernes</h4>
+                            <p class="text-muted mb-0"><i class="fas fa-map-marker-alt me-1"></i> Centre-ville</p>
+                        </div>
+                        <span class="badge bg-warning text-dark fs-6">Bientôt disponible</span>
+                    </div>
+                    
+                    <div class="position-relative mb-3">
+                        <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Appartement T2" class="img-fluid rounded" style="height: 200px; width: 100%; object-fit: cover;">
+                        <div class="position-absolute bottom-0 start-0 bg-primary text-white px-3 py-1 rounded-end">
+                            <strong>À partir de 55 000 FCFA/mois</strong>
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted mb-3">Studios entièrement équipés avec kitchenette et salle de bain. Parfait pour l'indépendance.</p>
+                    
+                    <div class="apartment-features">
+                        <span class="feature-badge"><i class="fas fa-ruler-combined"></i> 25-35 m²</span>
+                        <span class="feature-badge"><i class="fas fa-bed"></i> Studio</span>
+                        <span class="feature-badge"><i class="fas fa-tv"></i> Meublé</span>
+                    </div>
+                    
+                    <button class="btn btn-outline-primary w-100 mt-3" onclick="showInterest(2)">
+                        <i class="fas fa-bell me-2"></i>Être notifié
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Appartement 3 -->
+            <div class="col-md-6 col-lg-4 scroll-reveal">
+                <div class="apartment-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h4 class="fw-bold mb-1">Colocations</h4>
+                            <p class="text-muted mb-0"><i class="fas fa-map-marker-alt me-1"></i> Campus Principal</p>
+                        </div>
+                        <span class="badge bg-success fs-6">Disponible</span>
+                    </div>
+                    
+                    <div class="position-relative mb-3">
+                        <img src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Colocation" class="img-fluid rounded" style="height: 200px; width: 100%; object-fit: cover;">
+                        <div class="position-absolute bottom-0 start-0 bg-primary text-white px-3 py-1 rounded-end">
+                            <strong>25 000 FCFA/personne</strong>
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted mb-3">Colocations de 3-4 chambres avec salon spacieux et cuisine entièrement équipée.</p>
+                    
+                    <div class="apartment-features">
+                        <span class="feature-badge"><i class="fas fa-users"></i> 3-4 colocataires</span>
+                        <span class="feature-badge"><i class="fas fa-car"></i> Parking</span>
+                        <span class="feature-badge"><i class="fas fa-dumbbell"></i> Espace sport</span>
+                    </div>
+                    
+                    <button class="btn btn-primary w-100 mt-3" onclick="showInterest(3)">
+                        <i class="fas fa-heart me-2"></i>Exprimer son intérêt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<!-- Section Inscription pour accéder aux appartements -->
+<!-- Section Inscription pour accéder aux appartements (visible seulement si non inscrit) -->
+{% if not est_inscrit %}
 <section id="registrationSection" class="py-5">
     <div class="container">
         <div class="row justify-content-center">
@@ -544,16 +642,14 @@
                         
                         <h3 class="fw-bold mb-3">Accédez à la liste complète des appartements</h3>
                         <p class="lead text-muted mb-4">
-                            Inscrivez-vous gratuitement pour découvrir tous nos logements étudiants disponibles 
+                            Complétez votre inscription pour découvrir tous nos logements étudiants disponibles 
                             et bénéficier de notre accompagnement personnalisé.
                         </p>
                         
-                        <div class="row g-3 justify-content-center">
-                            <div class="col-md-6">
-                                <button class="btn btn-outline-secondary btn-lg w-100 py-3" onclick="simulateRegistration()">
-                                    <i class="fas fa-eye me-2"></i>Voir un aperçu
-                                </button>
-                            </div>
+                        <div class="d-grid gap-3 col-lg-6 mx-auto">
+                            <a href="{{ url_for('formulaire') }}" class="btn btn-primary btn-lg py-3">
+                                <i class="fas fa-user-plus me-2"></i>Compléter mon inscription
+                            </a>
                         </div>
                         
                         <div class="mt-4">
@@ -568,6 +664,7 @@
         </div>
     </div>
 </section>
+{% endif %}
 
 <!-- Modal de confirmation d'intérêt -->
 <div id="interestModal" class="confirmation-modal">
@@ -605,13 +702,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, index * 200);
     });
     
-    // Vérifier si l'utilisateur est "inscrit" (simulation)
-    const isRegistered = localStorage.getItem('isRegistered') === 'true';
-    if (isRegistered) {
-        showConfirmation();
-        showApartments();
-    }
-    
     // Observer pour l'animation au scroll
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -622,87 +712,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { threshold: 0.1 });
     
     document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+    
+    // Afficher les confettis si message de succès
+    const successMessage = document.getElementById('confirmationMessage');
+    if (successMessage) {
+        createConfetti();
+        
+        // Scroller vers la section des appartements si l'utilisateur est inscrit
+        {% if est_inscrit %}
+        setTimeout(() => {
+            const apartmentsSection = document.getElementById('apartmentsSection');
+            if (apartmentsSection) {
+                apartmentsSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }, 1500);
+        {% endif %}
+    }
 });
-
-// Fonction pour afficher la confirmation d'inscription
-function showConfirmation() {
-    const message = document.getElementById('confirmationMessage');
-    message.style.display = 'block';
-    
-    // Animation d'apparition
-    message.style.opacity = '0';
-    message.style.transform = 'translateY(-20px)';
-    
-    setTimeout(() => {
-        message.style.transition = 'all 0.5s ease';
-        message.style.opacity = '1';
-        message.style.transform = 'translateY(0)';
-    }, 100);
-    
-    // Créer des confettis
-    createConfetti();
-}
 
 // Fonction pour cacher la confirmation
 function hideConfirmation() {
     const message = document.getElementById('confirmationMessage');
-    message.style.opacity = '0';
-    message.style.transform = 'translateY(-20px)';
-    
-    setTimeout(() => {
-        message.style.display = 'none';
-    }, 500);
-}
-
-// Fonction pour afficher la section des appartements
-function showApartments() {
-    const section = document.getElementById('apartmentsSection');
-    const registrationSection = document.getElementById('registrationSection');
-    
-    registrationSection.style.opacity = '1';
-    registrationSection.style.transition = 'opacity 0.5s ease';
-    
-    setTimeout(() => {
-        registrationSection.style.opacity = '0';
+    if (message) {
+        message.style.opacity = '0';
+        message.style.transform = 'translateY(-20px)';
         
         setTimeout(() => {
-            registrationSection.style.display = 'none';
-            section.style.display = 'block';
-            
-            // Animation d'apparition
-            section.style.opacity = '0';
-            
-            setTimeout(() => {
-                section.style.transition = 'opacity 0.8s ease';
-                section.style.opacity = '1';
-                
-                // Animer les cartes d'appartements
-                const cards = section.querySelectorAll('.scroll-reveal');
-                cards.forEach((card, index) => {
-                    card.style.transitionDelay = (index * 0.2) + 's';
-                });
-            }, 100);
+            message.style.display = 'none';
         }, 500);
-    }, 100);
-}
-
-// Simulation d'inscription (pour démo)
-function simulateRegistration() {
-    // Simuler l'inscription
-    localStorage.setItem('isRegistered', 'true');
-    
-    // Afficher la confirmation
-    showConfirmation();
-    
-    // Afficher les appartements après un délai
-    setTimeout(() => {
-        showApartments();
-        
-        // Scroller vers la section des appartements
-        document.getElementById('apartmentsSection').scrollIntoView({
-            behavior: 'smooth'
-        });
-    }, 1000);
+    }
 }
 
 // Fonction pour montrer l'intérêt pour un appartement
@@ -713,8 +754,15 @@ function showInterest(apartmentId) {
     // Animation de confettis
     createConfetti();
     
-    // Enregistrer l'intérêt (simulation)
+    // Enregistrer l'intérêt (dans une vraie app, cela enverrait une requête au serveur)
     console.log(`Intérêt enregistré pour l'appartement ${apartmentId}`);
+    
+    // Ici, vous pourriez ajouter un appel AJAX pour sauvegarder l'intérêt
+    // fetch('/api/interet-apartement', {
+    //     method: 'POST',
+    //     headers: {'Content-Type': 'application/json'},
+    //     body: JSON.stringify({apartment_id: apartmentId})
+    // });
 }
 
 // Fonction pour fermer le modal d'intérêt
@@ -726,12 +774,6 @@ function closeInterestModal() {
         modal.style.display = 'none';
         modal.style.opacity = '1';
     }, 500);
-}
-
-// Fonction pour montrer plus d'appartements
-function showMoreApartments() {
-    // Simulation - dans une vraie app, cela chargerait plus d'appartements
-    alert('Cette fonctionnalité chargerait plus d\'appartements dans une version complète.');
 }
 
 // Fonction pour créer des confettis
@@ -769,16 +811,6 @@ function createConfetti() {
         animation.onfinish = () => confetti.remove();
     }
 }
-
-// Gestion du clic sur le bouton d'inscription
-document.getElementById('registerBtn').addEventListener('click', function(e) {
-    // Dans une vraie application, vous redirigeriez vers le formulaire
-    // Pour la démo, on peut montrer un message
-    if (!localStorage.getItem('isRegistered')) {
-        e.preventDefault();
-        simulateRegistration();
-    }
-});
 
 // Fermer le modal en cliquant à l'extérieur
 window.addEventListener('click', function(e) {

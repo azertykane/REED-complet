@@ -117,7 +117,9 @@ def index():
 
 @app.route('/information')
 def information():
-    return render_template('information.html')
+    # Vérifier si l'utilisateur est inscrit via la session
+    est_inscrit = session.get('est_inscrit', False)
+    return render_template('information.html', est_inscrit=est_inscrit)
 
 @app.route('/formulaire', methods=['GET', 'POST'])
 def formulaire():
@@ -197,6 +199,11 @@ def formulaire():
             
             # Commit toutes les données
             db.session.commit()
+            
+
+            session['est_inscrit'] = True
+            session['nom_utilisateur'] = f"{prenom} {nom}"
+            session['email_utilisateur'] = email
             
             # Envoyer l'email de confirmation en arrière-plan
             try:
