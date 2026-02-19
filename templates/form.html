@@ -1,252 +1,811 @@
 {% extends "base.html" %}
 
-{% block title %}Formulaire de Demande de logement dans les appartements du REED{% endblock %}
+{% block title %}Inscriptions Closes - REED{% endblock %}
 
 {% block extra_css %}
 <style>
-    .form-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem 0;
-        margin-bottom: 2rem;
-        color: white;
+    /* Animations avancées */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    .document-upload {
-        border: 2px dashed var(--light-blue);
-        border-radius: 10px;
-        padding: 1rem;
-        text-align: center;
-        background: var(--light-gray);
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulseGlow {
+        0%, 100% {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        50% {
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+        }
+    }
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0) scale(1);
+        }
+        50% {
+            transform: translateY(-15px) scale(1.05);
+        }
+    }
+    
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    @keyframes gradientShift {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+    
+    @keyframes shine {
+        0% {
+            left: -100%;
+        }
+        20% {
+            left: 100%;
+        }
+        100% {
+            left: 100%;
+        }
+    }
+    
+    @keyframes wave {
+        0%, 100% {
+            transform: scaleY(1);
+        }
+        50% {
+            transform: scaleY(1.5);
+        }
+    }
+    
+    .animate-fade-down {
+        animation: fadeInDown 0.8s ease-out forwards;
+        opacity: 0;
+    }
+    
+    .animate-fade-up {
+        animation: fadeInUp 0.8s ease-out forwards;
+        opacity: 0;
+    }
+    
+    .animate-delay-1 {
+        animation-delay: 0.2s;
+    }
+    
+    .animate-delay-2 {
+        animation-delay: 0.4s;
+    }
+    
+    .animate-delay-3 {
+        animation-delay: 0.6s;
+    }
+    
+    .animate-float {
+        animation: float 4s ease-in-out infinite;
+    }
+    
+    .animate-pulse-glow {
+        animation: pulseGlow 2s ease-in-out infinite;
+    }
+    
+    /* Hero Section améliorée */
+    .hero-closed {
+        background: linear-gradient(-45deg, 
+            var(--primary-blue), 
+            #2563eb, 
+            #4f46e5, 
+            #7c3aed,
+            var(--secondary-blue)
+        );
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
+        color: white;
+        padding: 6rem 0 4rem;
+        position: relative;
+        overflow: hidden;
+        clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+        margin-bottom: 2rem;
+    }
+    
+    .hero-closed::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+        animation: spin 25s linear infinite;
+    }
+    
+    .hero-closed::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, 
+            transparent, 
+            var(--primary-yellow), 
+            white, 
+            var(--primary-yellow), 
+            transparent
+        );
+    }
+    
+    /* Icône de cadenas améliorée */
+    .lock-icon {
+        width: 140px;
+        height: 140px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(15px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2.5rem;
+        font-size: 4rem;
+        color: white;
+        border: 4px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 30px 50px rgba(0,0,0,0.3);
+        position: relative;
         transition: all 0.3s ease;
+    }
+    
+    .lock-icon::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+        z-index: -1;
+    }
+    
+    .lock-icon i {
+        filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+    }
+    
+    /* Badge amélioré */
+    .status-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        padding: 0.75rem 2.5rem;
+        border-radius: 60px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        margin-top: 1.5rem;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        text-transform: uppercase;
+        font-size: 0.9rem;
+    }
+    
+    /* Message principal amélioré */
+    .message-card {
+        background: white;
+        border-radius: 40px;
+        padding: 4rem;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.15);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        transform: translateY(-60px);
+        margin-bottom: -30px;
+        z-index: 10;
+    }
+    
+    .message-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, 
+            var(--primary-blue), 
+            var(--secondary-blue), 
+            var(--primary-yellow), 
+            var(--secondary-blue), 
+            var(--primary-blue)
+        );
+        background-size: 300% 100%;
+        animation: gradientShift 5s ease infinite;
+    }
+    
+    .message-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
         height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.4), 
+            transparent
+        );
+        animation: shine 5s infinite;
+    }
+    
+    .message-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, var(--light-blue), #e0f2fe);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        color: var(--primary-blue);
+        font-size: 2.5rem;
+        box-shadow: 0 20px 30px rgba(59, 130, 246, 0.2);
+        position: relative;
+    }
+    
+    .message-icon::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-blue), transparent);
+        opacity: 0.3;
+        z-index: -1;
+    }
+    
+    /* Call to action amélioré */
+    .cta-button {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: white;
+        border: none;
+        padding: 1rem 3.5rem;
+        border-radius: 60px;
+        font-weight: 600;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        letter-spacing: 0.5px;
+    }
+    
+    .cta-button:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 20px 30px rgba(59, 130, 246, 0.4);
+    }
+    
+    .cta-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s ease;
+    }
+    
+    .cta-button:hover::before {
+        left: 100%;
+    }
+    
+    /* Section date améliorée */
+    .date-section {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 30px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .date-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 50px rgba(0,0,0,0.12);
+    }
+    
+    .date-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 70%);
+        animation: spin 20s linear infinite;
+    }
+    
+    .date-badge {
+        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 60px;
+        font-weight: 700;
+        box-shadow: 0 15px 25px rgba(59, 130, 246, 0.3);
+        display: inline-block;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .date-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shine 3s infinite;
+    }
+    
+    /* Contact card améliorée */
+    .contact-card {
+        background: white;
+        border-radius: 30px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .contact-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 60px rgba(59, 130, 246, 0.15);
+    }
+    
+    .contact-card::before {
+        content: '';
+        position: absolute;
+        top: -100px;
+        right: -100px;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, var(--light-blue) 0%, transparent 70%);
+        opacity: 0.5;
+        border-radius: 50%;
+    }
+    
+    .contact-card .btn {
+        border-radius: 50px;
+        padding: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border-width: 2px;
+    }
+    
+    .contact-card .btn:hover {
+        transform: translateX(10px);
+    }
+    
+    .contact-card .btn-outline-primary {
+        color: var(--primary-blue);
+        border-color: var(--primary-blue);
+    }
+    
+    .contact-card .btn-outline-primary:hover {
+        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* FAQ améliorée */
+    .faq-item {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+        transition: all 0.4s ease;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .faq-item:hover {
+        transform: translateY(-8px) scale(1.02);
+        border-color: var(--primary-blue);
+        box-shadow: 0 25px 40px rgba(59, 130, 246, 0.15);
+    }
+    
+    .faq-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 0;
+        background: linear-gradient(to bottom, var(--primary-blue), var(--secondary-blue));
+        transition: height 0.4s ease;
+    }
+    
+    .faq-item:hover::before {
+        height: 100%;
+    }
+    
+    .faq-question {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
         margin-bottom: 1rem;
     }
-    .document-upload:hover {
-        border-color: var(--secondary-blue);
+    
+    .faq-question i {
+        width: 40px;
+        height: 40px;
         background: var(--light-blue);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-blue);
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
     }
-    #progress-bar {
+    
+    .faq-item:hover .faq-question i {
+        background: var(--primary-blue);
+        color: white;
+        transform: rotate(360deg);
+    }
+    
+    .faq-question h6 {
+        font-size: 1.1rem;
+        margin: 0;
+        color: var(--dark-gray);
+    }
+    
+    .faq-item p {
+        margin-left: 3.5rem;
+        color: #64748b;
+        line-height: 1.6;
+    }
+    
+    /* Titres de section */
+    .section-title-custom {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
+    }
+    
+    .section-title-custom::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
         height: 4px;
-        margin-top: 1rem;
+        background: linear-gradient(90deg, var(--primary-blue), var(--primary-yellow), var(--secondary-blue));
+        border-radius: 2px;
+    }
+    
+    /* Grille de contact améliorée */
+    .contact-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .message-card {
+            padding: 2rem;
+        }
+        
+        .hero-closed {
+            padding: 4rem 0 2rem;
+        }
+        
+        .lock-icon {
+            width: 100px;
+            height: 100px;
+            font-size: 2.5rem;
+        }
+        
+        .date-badge {
+            font-size: 1rem;
+            padding: 0.75rem 1.5rem;
+        }
+    }
+    
+    /* Effet de vague pour le fond */
+    .wave-bg {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='1' d='M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,170.7C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+        background-size: cover;
+        background-position: bottom;
+        opacity: 0.1;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="form-section">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 text-center">
-                <h1 class="h3 fw-bold mb-2">Formulaire de demande de logement</h1>
-                <p class="lead mb-0">Remplissez ce formulaire pour faire une demande de logement</p>
-            </div>
+<!-- Hero Section améliorée -->
+<div class="hero-closed text-center">
+    <div class="container position-relative">
+        <div class="lock-icon animate-float">
+            <i class="fas fa-lock"></i>
+        </div>
+        
+        <h1 class="display-3 fw-bold mb-3 animate-fade-down" style="text-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+            Inscriptions Closes
+        </h1>
+        
+        <div class="status-badge animate-fade-down animate-delay-1 animate-pulse-glow">
+            <i class="fas fa-hourglass-end me-2"></i>
+            SESSION 2025-2026 TERMINÉE
         </div>
     </div>
+    <div class="wave-bg"></div>
 </div>
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-12 col-lg-10">
-            <div class="card shadow border-0 mb-4">
-                <div class="card-body p-3 p-md-4">
-                    <form method="POST" action="{{ url_for('formulaire') }}" enctype="multipart/form-data" id="demandeForm">
-                        <h3 class="h5 mb-3 text-primary">
-                            <i class="fas fa-user-circle me-2"></i>Informations personnelles
-                        </h3>
-                        
-                        <div class="row mb-3">
-                            <div class="col-12 col-md-6 mb-3">
-                                <label for="nom" class="form-label fw-semibold">Nom *</label>
-                                <input type="text" class="form-control" id="nom" name="nom" required>
-                            </div>
-                            <div class="col-12 col-md-6 mb-3">
-                                <label for="prenom" class="form-label fw-semibold">Prénom *</label>
-                                <input type="text" class="form-control" id="prenom" name="prenom" required>
-                            </div>
-                            <div class="col-12 mb-3">
-                                <label for="adresse" class="form-label fw-semibold">Adresse complète *</label>
-                                <textarea class="form-control" id="adresse" name="adresse" rows="2" required></textarea>
-                            </div>
-                            <div class="col-12 col-md-6 mb-3">
-                                <label for="telephone" class="form-label fw-semibold">Numéro de téléphone *</label>
-                                <input type="tel" class="form-control" id="telephone" name="telephone" required>
-                            </div>
-                            <div class="col-12 col-md-6 mb-3">
-                                <label for="email" class="form-label fw-semibold">Email *</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
-                            </div>
-                            <div class="row mb-4">
-    <div class="col-md-6 mb-3">
-        <label for="region_universitaire" class="form-label">Région universitaire *</label>
-        <select class="form-select" id="region_universitaire" name="region_universitaire" required>
-            <option value="">Sélectionnez votre région...</option>
-            {% for region in regions_universitaires %}
-            <option value="{{ region }}">{{ region }}</option>
-            {% endfor %}
-        </select>
-        <small class="form-text text-muted">Région où vous étudiez</small>
-    </div>
-                        </div>
-
-                        <hr class="my-4">
-
-                        <h3 class="h5 mb-3 text-primary">
-                            <i class="fas fa-file-upload me-2"></i>Documents à fournir
-                        </h3>
-                        <p class="text-muted mb-3">Tous les documents doivent être au format PDF (max 16MB)</p>
-
-                        <div class="row">
-                            <!-- Ligne 1 -->
-                            <div class="col-12 col-md-6 col-lg-4 mb-3">
-                                <div class="document-upload">
-                                    <label for="certificat_inscription" class="form-label fw-semibold">
-                                        <i class="fas fa-graduation-cap me-1"></i>Certificat d'inscription ou carte etudiante valide *
-                                    </label>
-                                    <input type="file" class="form-control form-control-sm" id="certificat_inscription" 
-                                           name="certificat_inscription" accept=".pdf" required>
-                                    <small class="form-text text-muted d-block mt-1">Document prouvant votre statut étudiant</small>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6 col-lg-4 mb-3">
-                                <div class="document-upload">
-                                    <label for="certificat_residence" class="form-label fw-semibold">
-                                        <i class="fas fa-home me-1"></i>Certificat de résidence *
-                                    </label>
-                                    <input type="file" class="form-control form-control-sm" id="certificat_residence" 
-                                           name="certificat_residence" accept=".pdf" required>
-                                    <small class="form-text text-muted d-block mt-1">Justificatif de domicile</small>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6 col-lg-4 mb-3">
-                                <div class="document-upload">
-                                    <label for="copie_cni" class="form-label fw-semibold">
-                                        <i class="fas fa-id-card me-1"></i>Copie de la CNI *
-                                    </label>
-                                    <input type="file" class="form-control form-control-sm" id="copie_cni" 
-                                           name="copie_cni" accept=".pdf" required>
-                                    <small class="form-text text-muted d-block mt-1">Carte Nationale d'Identité recto-verso</small>
-                                </div>
-                            </div>
-                            
-                            <!-- Ligne 2 -->
-                            <div class="col-12 col-md-6 col-lg-6 mb-3">
-                                <div class="document-upload">
-                                    <label for="demande_manuscrite" class="form-label fw-semibold">
-                                        <i class="fas fa-pen-fancy me-1"></i>Demande manuscrite *
-                                    </label>
-                                    <input type="file" class="form-control form-control-sm" id="demande_manuscrite" 
-                                           name="demande_manuscrite" accept=".pdf" required>
-                                    <small class="form-text text-muted d-block mt-1">Lettre manuscrite de motivation</small>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6 col-lg-6 mb-3">
-                                <div class="document-upload">
-                                    <label for="carte_membre_reed" class="form-label fw-semibold">
-                                        <i class="fas fa-address-card me-1"></i>Carte membre REED *
-                                    </label>
-                                    <input type="file" class="form-control form-control-sm" id="carte_membre_reed" 
-                                           name="carte_membre_reed" accept=".pdf" required>
-                                    <small class="form-text text-muted d-block mt-1">Carte de membre REED valide</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="alert alert-info mt-3">
-                            <h5 class="h6 mb-2"><i class="fas fa-info-circle me-2"></i>Important</h5>
-                            <ul class="mb-0 ps-3">
-                                <li class="mb-1">Tous les champs marqués d'un * sont obligatoires</li>
-                                <li class="mb-1"><strong>La CNI doit être recto-verso lisible</strong></li>
-                                <li class="mb-1">Votre demande sera traitée au lendemain de fermeture des dépots</li>
-                                <li class="mb-1">Vous recevrez une notification par email du résultat</li>
-                                <li>Les documents doivent scannés et convertisen pdf</li>
-                            </ul>
-                        </div>
-
-                        <div class="progress d-none" id="progress-container">
-                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
-                                role="progressbar" style="width: 0%"></div>
-                        </div>
-                        <p id="progress-text" class="text-center d-none small mb-3">Traitement en cours...</p>
-
-                        <div class="d-flex flex-column flex-md-row gap-2 justify-content-end mt-4">
-                            <button type="reset" class="btn btn-outline-secondary order-2 order-md-1">
-                                <i class="fas fa-undo me-1"></i>Effacer
-                            </button>
-                            <button type="submit" class="btn btn-primary order-1 order-md-2" id="submit-btn">
-                                <i class="fas fa-paper-plane me-1"></i>Soumettre la demande
-                            </button>
-                        </div>
-                    </form>
+<!-- Message Principal amélioré -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="message-card text-center animate-fade-up">
+                    <div class="message-icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    
+                    <h2 class="fw-bold mb-4" style="font-size: 2.5rem; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        La période d'inscription est terminée
+                    </h2>
+                    
+                    <p class="lead mb-5" style="max-width: 700px; margin-left: auto; margin-right: auto; color: #475569;">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Merci à tous les candidats pour leur intérêt. 
+                        Les dossiers sont en cours de traitement.
+                    </p>
+                    
+                    <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                        <a href="#contact" class="cta-button text-decoration-none">
+                            <i class="fas fa-envelope me-2"></i>
+                            Nous contacter
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- Prochaine Session améliorée -->
+<section class="py-4">
+    <div class="container">
+        <div class="date-section">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h3 class="fw-bold mb-2" style="color: var(--primary-blue); font-size: 2rem;">
+                        <i class="fas fa-hourglass-half me-2" style="color: var(--primary-yellow);"></i>
+                        Prochaine session
+                    </h3>
+                    <p class="text-muted mb-0 fs-5">
+                        Les inscriptions pour la session <strong> 2026-2027</strong> ouvriront en  Decembre
+                    </p>
+                </div>
+                <div class="col-lg-6 text-lg-end">
+                    <div class="date-badge">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        <span class="fw-bold">1er Décembre 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact amélioré -->
+<section id="contact" class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="contact-card">
+                    <div class="row align-items-center g-4">
+                        <div class="col-md-5">
+                            <div class="text-center text-md-start">
+                                <div class="message-icon" style="width: 80px; height: 80px; margin: 0 0 1.5rem;">
+                                    <i class="fas fa-headset"></i>
+                                </div>
+                                <h4 class="fw-bold mb-3" style="color: var(--primary-blue);">Une question ?</h4>
+                                <p class="text-muted mb-0">
+                                    Notre équipe est à votre disposition<br>pour vous accompagner.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="contact-grid">
+                                <a href="mailto:commissionsociale.reed@gmail.com" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-envelope me-2"></i>
+                                    commissionsociale.reed@gmail.com
+                                </a>
+                                <a href="tel:+221781428319" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-phone-alt me-2"></i>
+                                    SG: +221 78 142 83 19
+                                </a>
+                                <a href="tel:+221773961004" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-phone-alt me-2"></i>
+                                    PCS-E: +221 77 396 10 04
+                                </a>
+                                <a href="mailto:reeddiamniadio@gmail.com" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-envelope me-2"></i>
+                                    reed-diamniadio
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ améliorée -->
+<section class="py-5" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title-custom">Questions fréquentes</h2>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-question-circle"></i>
+                        <h6 class="fw-bold">Puis-je encore postuler ?</h6>
+                    </div>
+                    <p class="text-muted">
+                        Les inscriptions sont closes pour cette session. 
+                        La prochaine ouverture est prévue en <strong>Décembre 2026</strong>.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-question-circle"></i>
+                        <h6 class="fw-bold">Où sont les résultats ?</h6>
+                    </div>
+                    <p class="text-muted">
+                        Les résultats seront communiqués par email. 
+                        <strong>Pensez à vérifier vos spams</strong> et courriers indésirables.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// Animation au scroll améliorée
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('demandeForm');
-    const submitBtn = document.getElementById('submit-btn');
-    const progressContainer = document.getElementById('progress-container');
-    const progressBar = document.getElementById('progress-bar');
-    const progressText = document.getElementById('progress-text');
-    
-    form.addEventListener('submit', function(e) {
-        // Validation des fichiers
-        const fileInputs = form.querySelectorAll('input[type="file"]');
-        let allFilesValid = true;
-        
-        fileInputs.forEach(input => {
-            if (input.files.length > 0) {
-                const file = input.files[0];
-                const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-                const maxSize = 16 * 1024 * 1024; // 16MB
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-fade-up');
+                entry.target.style.opacity = '1';
                 
-                if (!validTypes.includes(file.type)) {
-                    alert(`❌ Le fichier ${input.previousElementSibling.textContent.trim()} doit être au format PDF, JPG ou PNG`);
-                    allFilesValid = false;
-                    e.preventDefault();
-                }
-                
-                if (file.size > maxSize) {
-                    alert(`⚠️ Le fichier ${input.previousElementSibling.textContent.trim()} est trop volumineux (max 16MB)`);
-                    allFilesValid = false;
-                    e.preventDefault();
+                // Effet supplémentaire pour les cartes de contact
+                if (entry.target.classList.contains('contact-card')) {
+                    entry.target.style.transform = 'translateY(0)';
                 }
             }
         });
-        
-        if (allFilesValid) {
-            // Afficher la progression
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Traitement...';
-            progressContainer.classList.remove('d-none');
-            progressText.classList.remove('d-none');
-            
-            // Animation de progression
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 10;
-                if (progress <= 90) {
-                    progressBar.style.width = progress + '%';
-                }
-            }, 300);
-            
-            // Nettoyer l'intervalle lors de la soumission
-            form.addEventListener('submit', function() {
-                clearInterval(interval);
-            }, { once: true });
-        }
+    }, { 
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
     });
     
-    // Reset du formulaire
-    form.addEventListener('reset', function() {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Soumettre la demande';
-        progressContainer.classList.add('d-none');
-        progressText.classList.add('d-none');
-        progressBar.style.width = '0%';
+    document.querySelectorAll('.message-card, .date-section, .contact-card, .faq-item').forEach(el => {
+        el.style.opacity = '0';
+        observer.observe(el);
+    });
+    
+    // Animation progressive des boutons de contact
+    const contactButtons = document.querySelectorAll('.contact-grid .btn');
+    contactButtons.forEach((btn, index) => {
+        btn.style.opacity = '0';
+        btn.style.transform = 'translateX(20px)';
+        
+        setTimeout(() => {
+            btn.style.transition = 'all 0.5s ease';
+            btn.style.opacity = '1';
+            btn.style.transform = 'translateX(0)';
+        }, 500 + (index * 100));
+    });
+});
+
+// Effet de parallaxe amélioré
+window.addEventListener('mousemove', function(e) {
+    const hero = document.querySelector('.hero-closed');
+    if (!hero) return;
+    
+    const x = (e.clientX / window.innerWidth - 0.5) * 15;
+    const y = (e.clientY / window.innerHeight - 0.5) * 10;
+    
+    hero.style.backgroundPosition = `${50 + x}% ${50 + y}%`;
+    
+    // Effet sur le cadenas
+    const lockIcon = document.querySelector('.lock-icon');
+    if (lockIcon) {
+        const rotateY = (e.clientX / window.innerWidth - 0.5) * 10;
+        const rotateX = (e.clientY / window.innerHeight - 0.5) * -10;
+        lockIcon.style.transform = `perspective(1000px) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
+    }
+});
+
+// Smooth scroll pour les ancres
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
     });
 });
 </script>
