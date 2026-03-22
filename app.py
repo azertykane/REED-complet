@@ -10,6 +10,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.colors import HexColor
 import requests
+import json
 
 from config import Config
 from database import db, StudentRequest
@@ -926,7 +927,7 @@ def admin_logout():
     session.pop('admin_logged_in', None)
     flash('Déconnexion réussie', 'success')
     return redirect(url_for('admin_login'))
-    
+
 @app.route('/admis')
 def admis():
     """Affiche la liste des admis à partir du fichier JSON"""
