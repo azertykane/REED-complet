@@ -1,0 +1,33 @@
+{
+  "id": "95",
+  "nom": "Aris",
+  "prenom": "Moustapha",
+  "adresse": "Diamniadio sud",
+  "telephone": "77 30 58 590",
+  "email": "harrismoustapha38@gmail.com",
+  "region": "Saint-Louis",
+  "statut": "approved",
+  "date_soumission": "2026-02-17 17:25:39.506350",
+  "documents": {
+    "certificat_inscription": {
+      "nom_fichier": "95_certificat_inscription.pdf",
+      "placeholder_cree": true
+    },
+    "certificat_residence": {
+      "nom_fichier": "95_certificat_residence.pdf",
+      "placeholder_cree": true
+    },
+    "copie_cni": {
+      "nom_fichier": "95_copie_cni.pdf",
+      "placeholder_cree": true
+    },
+    "demande_manuscrite": {
+      "nom_fichier": "95_demande_manuscrite.pdf",
+      "placeholder_cree": true
+    },
+    "carte_membre_reed": {
+      "nom_fichier": "95_carte_membre_reed.pdf",
+      "placeholder_cree": true
+    }
+  }
+}

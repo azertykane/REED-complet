@@ -1,0 +1,33 @@
+{
+  "id": "98",
+  "nom": "Toure",
+  "prenom": "Khady",
+  "adresse": "Diamniadio",
+  "telephone": "70 54 78 182",
+  "email": "dijahtoure821@gmail.com",
+  "region": "Saint-Louis",
+  "statut": "approved",
+  "date_soumission": "2026-02-18 15:03:05.392883",
+  "documents": {
+    "certificat_inscription": {
+      "nom_fichier": "98_certificat_inscription.jpg",
+      "placeholder_cree": true
+    },
+    "certificat_residence": {
+      "nom_fichier": "98_certificat_residence.jpg",
+      "placeholder_cree": true
+    },
+    "copie_cni": {
+      "nom_fichier": "98_copie_cni.jpg",
+      "placeholder_cree": true
+    },
+    "demande_manuscrite": {
+      "nom_fichier": "98_demande_manuscrite.pdf",
+      "placeholder_cree": true
+    },
+    "carte_membre_reed": {
+      "nom_fichier": "98_carte_membre_reed.pdf",
+      "placeholder_cree": true
+    }
+  }
+}

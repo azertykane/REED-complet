@@ -117,9 +117,7 @@ def index():
 
 @app.route('/information')
 def information():
-    # Vérifier si l'utilisateur est inscrit via la session
-    est_inscrit = session.get('est_inscrit', False)
-    return render_template('information.html', est_inscrit=est_inscrit)
+    return render_template('information.html')
 
 @app.route('/formulaire', methods=['GET', 'POST'])
 def formulaire():
@@ -199,11 +197,6 @@ def formulaire():
             
             # Commit toutes les données
             db.session.commit()
-            
-
-            session['est_inscrit'] = True
-            session['nom_utilisateur'] = f"{prenom} {nom}"
-            session['email_utilisateur'] = email
             
             # Envoyer l'email de confirmation en arrière-plan
             try:
@@ -933,6 +926,21 @@ def admin_logout():
     session.pop('admin_logged_in', None)
     flash('Déconnexion réussie', 'success')
     return redirect(url_for('admin_login'))
+    
+@app.route('/admis')
+def admis():
+    """Affiche la liste des admis à partir du fichier JSON"""
+    json_path = os.path.join(app.root_path, 'static', 'data', 'admis.json')
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            admis_list = json.load(f)
+        # Trier par nom (optionnel)
+        admis_list.sort(key=lambda x: x['nom'])
+        return render_template('admis.html', admis=admis_list)
+    except FileNotFoundError:
+        return "Fichier des admis introuvable. Veuillez contacter l'administrateur.", 404
+    except Exception as e:
+        return f"Erreur lors du chargement des données : {str(e)}", 500
 
 # Gestion des erreurs
 @app.errorhandler(404)

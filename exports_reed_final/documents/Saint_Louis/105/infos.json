@@ -1,0 +1,33 @@
+{
+  "id": "105",
+  "nom": "Konaté",
+  "prenom": "Djibril",
+  "adresse": "Diamniadio",
+  "telephone": "75 65 59 878",
+  "email": "papek4709@gmail.com",
+  "region": "Saint-Louis",
+  "statut": "approved",
+  "date_soumission": "2026-02-19 13:28:19.034797",
+  "documents": {
+    "certificat_inscription": {
+      "nom_fichier": "105_certificat_inscription.pdf",
+      "placeholder_cree": true
+    },
+    "certificat_residence": {
+      "nom_fichier": "105_certificat_residence.pdf",
+      "placeholder_cree": true
+    },
+    "copie_cni": {
+      "nom_fichier": "105_copie_cni.pdf",
+      "placeholder_cree": true
+    },
+    "demande_manuscrite": {
+      "nom_fichier": "105_demande_manuscrite.pdf",
+      "placeholder_cree": true
+    },
+    "carte_membre_reed": {
+      "nom_fichier": "105_carte_membre_reed.pdf",
+      "placeholder_cree": true
+    }
+  }
+}

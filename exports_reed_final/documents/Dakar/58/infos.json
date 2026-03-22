@@ -1,0 +1,33 @@
+{
+  "id": "58",
+  "nom": "SECK",
+  "prenom": "Rokhaya",
+  "adresse": "Diamniadio Nord",
+  "telephone": "77 38 56 709",
+  "email": "seckrokhaya031@gmail.com",
+  "region": "Dakar",
+  "statut": "pending",
+  "date_soumission": "2026-02-12 19:13:26.621719",
+  "documents": {
+    "certificat_inscription": {
+      "nom_fichier": "58_certificat_inscription.pdf",
+      "placeholder_cree": true
+    },
+    "certificat_residence": {
+      "nom_fichier": "58_certificat_residence.pdf",
+      "placeholder_cree": true
+    },
+    "copie_cni": {
+      "nom_fichier": "58_copie_cni.pdf",
+      "placeholder_cree": true
+    },
+    "demande_manuscrite": {
+      "nom_fichier": "58_demande_manuscrite.pdf",
+      "placeholder_cree": true
+    },
+    "carte_membre_reed": {
+      "nom_fichier": "58_carte_membre_reed.pdf",
+      "placeholder_cree": true
+    }
+  }
+}

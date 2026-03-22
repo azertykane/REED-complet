@@ -1,0 +1,33 @@
+{
+  "id": "119",
+  "nom": "NIANG",
+  "prenom": "Malick",
+  "adresse": "Diamnidio, Sud",
+  "telephone": "76 61 22 776",
+  "email": "www.lickmaking@mail.com",
+  "region": "Diourbel",
+  "statut": "approved",
+  "date_soumission": "2026-02-19 22:03:00.158765",
+  "documents": {
+    "certificat_inscription": {
+      "nom_fichier": "119_certificat_inscription.pdf",
+      "placeholder_cree": true
+    },
+    "certificat_residence": {
+      "nom_fichier": "119_certificat_residence.pdf",
+      "placeholder_cree": true
+    },
+    "copie_cni": {
+      "nom_fichier": "119_copie_cni.pdf",
+      "placeholder_cree": true
+    },
+    "demande_manuscrite": {
+      "nom_fichier": "119_demande_manuscrite.pdf",
+      "placeholder_cree": true
+    },
+    "carte_membre_reed": {
+      "nom_fichier": "119_carte_membre_reed.pdf",
+      "placeholder_cree": true
+    }
+  }
+}

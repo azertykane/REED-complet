@@ -1,0 +1,33 @@
+{
+  "id": "72",
+  "nom": "Balde",
+  "prenom": "Samsidine",
+  "adresse": "Déni Malick gueye",
+  "telephone": "77 37 57 270",
+  "email": "samsidinebalde24@gmail.com",
+  "region": "Dakar",
+  "statut": "pending",
+  "date_soumission": "2026-02-13 19:16:16.072806",
+  "documents": {
+    "certificat_inscription": {
+      "nom_fichier": "72_certificat_inscription.pdf",
+      "placeholder_cree": true
+    },
+    "certificat_residence": {
+      "nom_fichier": "72_certificat_residence.pdf",
+      "placeholder_cree": true
+    },
+    "copie_cni": {
+      "nom_fichier": "72_copie_cni.pdf",
+      "placeholder_cree": true
+    },
+    "demande_manuscrite": {
+      "nom_fichier": "72_demande_manuscrite.pdf",
+      "placeholder_cree": true
+    },
+    "carte_membre_reed": {
+      "nom_fichier": "72_carte_membre_reed.pdf",
+      "placeholder_cree": true
+    }
+  }
+}

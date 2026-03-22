@@ -1,0 +1,26 @@
+FICHIER MANQUANT
+====================
+Dossier ID: 30
+Étudiant: Mame khady Kama
+Type de document: demande_manuscrite
+Nom du fichier original: 30_demande_manuscrite.pdf
+
+COMMENT RÉCUPÉRER CE FICHIER:
+-----------------------------
+1. Connectez-vous à votre compte Render (https://dashboard.render.com)
+2. Allez dans votre service Web "reed-site"
+3. Ouvrez le "Shell" ou "Console"
+4. Exécutez ces commandes :
+
+   cd /opt/render/project/src
+   find . -name "30_demande_manuscrite.pdf" -type f
+
+5. Si le fichier est trouvé, téléchargez-le avec :
+
+   cat /chemin/vers/le/fichier/30_demande_manuscrite.pdf
+
+6. Copiez le contenu base64 qui s'affiche et décodez-le
+
+OU ALTERNATIVEMENT:
+------------------
+Utilisez SCP ou SFTP pour télécharger tous les fichiers du dossier uploads/

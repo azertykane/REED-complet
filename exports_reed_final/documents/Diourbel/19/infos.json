@@ -1,0 +1,33 @@
+{
+  "id": "19",
+  "nom": "Biteye",
+  "prenom": "Fatou",
+  "adresse": "Diamniadio",
+  "telephone": "77 84 99 788",
+  "email": "biteyefatou568@gmail.com",
+  "region": "Diourbel",
+  "statut": "approved",
+  "date_soumission": "2026-02-07 09:03:43.684413",
+  "documents": {
+    "certificat_inscription": {
+      "nom_fichier": "19_certificat_inscription.pdf",
+      "placeholder_cree": true
+    },
+    "certificat_residence": {
+      "nom_fichier": "19_certificat_residence.pdf",
+      "placeholder_cree": true
+    },
+    "copie_cni": {
+      "nom_fichier": "19_copie_cni.pdf",
+      "placeholder_cree": true
+    },
+    "demande_manuscrite": {
+      "nom_fichier": "19_demande_manuscrite.pdf",
+      "placeholder_cree": true
+    },
+    "carte_membre_reed": {
+      "nom_fichier": "19_carte_membre_reed.pdf",
+      "placeholder_cree": true
+    }
+  }
+}

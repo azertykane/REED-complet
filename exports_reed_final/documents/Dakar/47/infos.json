@@ -1,0 +1,33 @@
+{
+  "id": "47",
+  "nom": "Ka",
+  "prenom": "Wolimata",
+  "adresse": "Diamniadio Sud",
+  "telephone": "78 38 29 152",
+  "email": "wolimataka8@gmail.com",
+  "region": "Dakar",
+  "statut": "pending",
+  "date_soumission": "2026-02-12 01:11:21.842347",
+  "documents": {
+    "certificat_inscription": {
+      "nom_fichier": "47_certificat_inscription.pdf",
+      "placeholder_cree": true
+    },
+    "certificat_residence": {
+      "nom_fichier": "47_certificat_residence.jpg",
+      "placeholder_cree": true
+    },
+    "copie_cni": {
+      "nom_fichier": "47_copie_cni.jpg",
+      "placeholder_cree": true
+    },
+    "demande_manuscrite": {
+      "nom_fichier": "47_demande_manuscrite.pdf",
+      "placeholder_cree": true
+    },
+    "carte_membre_reed": {
+      "nom_fichier": "47_carte_membre_reed.jpg",
+      "placeholder_cree": true
+    }
+  }
+}

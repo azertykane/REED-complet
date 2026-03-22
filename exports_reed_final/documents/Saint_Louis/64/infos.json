@@ -1,0 +1,33 @@
+{
+  "id": "64",
+  "nom": "Sow",
+  "prenom": "Khadidiatou",
+  "adresse": "Diamniadio Sud",
+  "telephone": "78 18 16 750",
+  "email": "khadidiatousow78181@icloud.com",
+  "region": "Saint-Louis",
+  "statut": "approved",
+  "date_soumission": "2026-02-12 23:51:48.936252",
+  "documents": {
+    "certificat_inscription": {
+      "nom_fichier": "64_certificat_inscription.jpg",
+      "placeholder_cree": true
+    },
+    "certificat_residence": {
+      "nom_fichier": "64_certificat_residence.jpg",
+      "placeholder_cree": true
+    },
+    "copie_cni": {
+      "nom_fichier": "64_copie_cni.jpg",
+      "placeholder_cree": true
+    },
+    "demande_manuscrite": {
+      "nom_fichier": "64_demande_manuscrite.jpg",
+      "placeholder_cree": true
+    },
+    "carte_membre_reed": {
+      "nom_fichier": "64_carte_membre_reed.jpg",
+      "placeholder_cree": true
+    }
+  }
+}
