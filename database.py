@@ -16,12 +16,18 @@ class StudentRequest(db.Model):
     # NOUVEAU : Région universitaire
     region_universitaire = db.Column(db.String(100), nullable=False, default='Dakar')
     
-    # File paths for uploaded documents
+    # Type de demande: logement ou bourse
+    request_type = db.Column(db.String(20), nullable=False, default='logement')
+    
+    # File paths for uploaded documents (logement)
     certificat_inscription = db.Column(db.String(300))
     certificat_residence = db.Column(db.String(300))
     demande_manuscrite = db.Column(db.String(300))
     carte_membre_reed = db.Column(db.String(300))
     copie_cni = db.Column(db.String(300))
+    
+    # File paths for uploaded documents (bourse)
+    certificat_scolarite = db.Column(db.String(300))
     
     # Status: pending, approved, rejected
     status = db.Column(db.String(20), default='pending')
@@ -35,3 +41,14 @@ class StudentRequest(db.Model):
     
     def __repr__(self):
         return f'<StudentRequest {self.nom} {self.prenom}>'
+
+class ApplicationStatus(db.Model):
+    __tablename__ = 'application_status'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    logement_open = db.Column(db.Boolean, default=False)
+    bourse_open = db.Column(db.Boolean, default=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<ApplicationStatus logement_open={self.logement_open}, bourse_open={self.bourse_open}>'

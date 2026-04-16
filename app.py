@@ -13,7 +13,7 @@ import requests
 import json
 
 from config import Config
-from database import db, StudentRequest
+from database import db, StudentRequest, ApplicationStatus
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -928,6 +928,32 @@ def admin_logout():
     flash('Déconnexion réussie', 'success')
     return redirect(url_for('admin_login'))
 
+@app.route('/ping')
+def ping():
+    """Route pour le keep-alive - maintient l'application active sur Render"""
+    return jsonify({
+        'status': 'alive',
+        'timestamp': datetime.utcnow().isoformat(),
+        'service': 'REED-app'
+    }), 200
+
+@app.route('/health')
+def health():
+    """Route de santé pour vérifier l'état de l'application"""
+    try:
+        # Vérifier la base de données
+        StudentRequest.query.first()
+        db_status = 'OK'
+    except:
+        db_status = 'ERROR'
+    
+    return jsonify({
+        'status': 'healthy',
+        'database': db_status,
+        'timestamp': datetime.utcnow().isoformat(),
+        'service': 'REED-app'
+    }), 200
+
 @app.route('/admis')
 def admis():
     """Affiche la liste des admis à partir du fichier JSON"""
@@ -942,6 +968,197 @@ def admis():
         return "Fichier des admis introuvable. Veuillez contacter l'administrateur.", 404
     except Exception as e:
         return f"Erreur lors du chargement des données : {str(e)}", 500
+
+# Routes pour les bourses
+@app.route('/bourse')
+def bourse_info():
+    """Page d'information sur les bourses"""
+    # Vérifier si les demandes de bourses sont ouvertes
+    app_status = ApplicationStatus.query.first()
+    bourse_open = app_status.bourse_open if app_status else False
+    
+    return render_template('forms_bourse.html', bourse_open=bourse_open)
+
+@app.route('/formulaire_bourse', methods=['GET', 'POST'])
+def formulaire_bourse():
+    """Formulaire de demande de bourse"""
+    # Vérifier si les demandes de bourses sont ouvertes
+    app_status = ApplicationStatus.query.first()
+    if not app_status or not app_status.bourse_open:
+        flash('Les demandes de bourses ne sont pas ouvertes pour le moment.', 'error')
+        return redirect(url_for('bourse_info'))
+    
+    if request.method == 'POST':
+        try:
+            # Get form data
+            nom = request.form.get('nom', '').strip()
+            prenom = request.form.get('prenom', '').strip()
+            adresse = request.form.get('adresse', '').strip()
+            telephone = request.form.get('telephone', '').strip()
+            email = request.form.get('email', '').strip().lower()
+            region_universitaire = request.form.get('region_universitaire', 'Dakar').strip()
+            
+            # Validate required fields
+            if not all([nom, prenom, adresse, telephone, email, region_universitaire]):
+                flash('Tous les champs sont obligatoires', 'error')
+                return redirect(url_for('formulaire_bourse'))
+            
+            # Validate email format
+            if '@' not in email or '.' not in email:
+                flash('Format d\'email invalide', 'error')
+                return redirect(url_for('formulaire_bourse'))
+            
+            # Validate phone number
+            if not telephone.replace(' ', '').replace('+', '').isdigit():
+                flash('Numéro de téléphone invalide', 'error')
+                return redirect(url_for('formulaire_bourse'))
+            
+            # Create new student request for bourse
+            new_request = StudentRequest(
+                nom=nom,
+                prenom=prenom,
+                adresse=adresse,
+                telephone=telephone,
+                email=email,
+                region_universitaire=region_universitaire,
+                request_type='bourse',
+                status='pending'
+            )
+            
+            # Handle file uploads for bourse
+            files_required = {
+                'demande_manuscrite': 'demande_manuscrite',
+                'certificat_scolarite': 'certificat_scolarite',
+                'certificat_residence': 'certificat_residence',
+                'carte_membre_reed': 'carte_membre_reed',
+                'bulletin_s2': 'bulletin_s2'
+            }
+            
+            # Vérifier d'abord tous les fichiers
+            for field, file_key in files_required.items():
+                file = request.files.get(file_key)
+                if not file or file.filename == '':
+                    flash(f'Le fichier {field.replace("_", " ")} est requis', 'error')
+                    return redirect(url_for('formulaire_bourse'))
+                
+                if not allowed_file(file.filename):
+                    flash(f'Le fichier {field.replace("_", " ")} doit être au format PDF, PNG ou JPG', 'error')
+                    return redirect(url_for('formulaire_bourse'))
+            
+            # Sauvegarder la demande d'abord
+            db.session.add(new_request)
+            db.session.flush()  # Get the ID without committing
+            
+            # Ensuite sauvegarder les fichiers
+            for field, file_key in files_required.items():
+                file = request.files.get(file_key)
+                if file and file.filename and allowed_file(file.filename):
+                    # Utiliser un nom de fichier simple
+                    ext = file.filename.rsplit('.', 1)[1].lower()
+                    filename = secure_filename(f"{new_request.id}_{field}.{ext}")
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    
+                    # Sauvegarder le fichier
+                    file.save(filepath)
+                    setattr(new_request, field, filename)
+            
+            # Commit toutes les données
+            db.session.commit()
+            
+            # Envoyer l'email de confirmation en arrière-plan
+            try:
+                send_confirmation_email_bourse(email, nom, prenom, new_request.id)
+            except Exception as email_error:
+                print(f"Erreur programmation email: {email_error}")
+            
+            flash('Votre demande de bourse a été soumise avec succès!', 'success')
+            return redirect(url_for('information'))
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Erreur lors de la soumission: {str(e)}")
+            flash('Une erreur est survenue. Veuillez réessayer.', 'error')
+            return redirect(url_for('formulaire_bourse'))
+    
+    regions_universitaires = [
+        'Dakar', 'Thiès', 'Saint-Louis', 'Ziguinchor', 'Kolda',
+        'Tambacounda', 'Kaolack', 'Fatick', 'Diourbel', 'Louga',
+        'Matam', 'Kédougou', 'Sédhiou'
+    ]
+    return render_template('form_bourse.html', regions_universitaires=regions_universitaires)
+
+def send_confirmation_email_bourse(to_email, nom, prenom, request_id):
+    """Envoyer un email de confirmation pour demande de bourse"""
+    subject = "Confirmation de réception de votre demande de bourse"
+    message = f"""Cher(e) {prenom} {nom},
+
+Nous accusons réception de votre demande de bourse au sein du REED.
+
+Votre dossier est en cours de traitement et vous serez notifié(e) par email dès qu'une décision sera prise.
+
+Nous vous remercions pour votre confiance et n'oubliez pas de consulter vos emails section Spam.
+
+Cordialement,
+La Commission Sociale REED
+"""
+    
+    try:
+        # Envoyer en arrière-plan
+        thread = threading.Thread(
+            target=send_email_async,
+            args=(to_email, subject, message)
+        )
+        thread.daemon = True
+        thread.start()
+        print(f"✓ Email de confirmation bourse programmé pour {to_email}")
+        
+    except Exception as email_error:
+        print(f"✗ Erreur d'envoi d'email: {email_error}")
+
+# Routes pour gérer l'ouverture/fermeture des demandes
+@app.route('/admin/application_status', methods=['GET', 'POST'])
+def admin_application_status():
+    """Gérer l'ouverture/fermeture des demandes de logement et bourse"""
+    if not session.get('admin_logged_in'):
+        flash('Veuillez vous connecter', 'error')
+        return redirect(url_for('admin_login'))
+    
+    app_status = ApplicationStatus.query.first()
+    
+    if request.method == 'POST':
+        try:
+            logement_open = request.form.get('logement_open') == 'on'
+            bourse_open = request.form.get('bourse_open') == 'on'
+            
+            if not app_status:
+                app_status = ApplicationStatus(
+                    logement_open=logement_open,
+                    bourse_open=bourse_open
+                )
+                db.session.add(app_status)
+            else:
+                app_status.logement_open = logement_open
+                app_status.bourse_open = bourse_open
+            
+            db.session.commit()
+            flash('Statut des demandes mis à jour avec succès', 'success')
+            return redirect(url_for('admin_application_status'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erreur lors de la mise à jour: {str(e)}', 'error')
+    
+    # Compter les demandes par type
+    logement_count = StudentRequest.query.filter_by(request_type='logement').count()
+    bourse_count = StudentRequest.query.filter_by(request_type='bourse').count()
+    logement_pending = StudentRequest.query.filter_by(request_type='logement', status='pending').count()
+    bourse_pending = StudentRequest.query.filter_by(request_type='bourse', status='pending').count()
+    
+    return render_template('admin_application_status.html', 
+                         app_status=app_status,
+                         logement_count=logement_count,
+                         bourse_count=bourse_count,
+                         logement_pending=logement_pending,
+                         bourse_pending=bourse_pending)
 
 # Gestion des erreurs
 @app.errorhandler(404)

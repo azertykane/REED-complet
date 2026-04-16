@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Inscriptions - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .status-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    .status-indicator {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    .status-indicator.open {
+        background: #28a745;
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+    }
+    .status-indicator.closed {
+        background: #dc3545;
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+    }
+    .switch-container {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+    .switch-container input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #28a745;
+    }
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+    .stat-box {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .stat-box h3 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .stat-box p {
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">
+                <i class="fas fa-toggle-on me-2"></i>Gestion des Inscriptions
+            </h1>
+            <p class="text-muted mb-0">Ouvrir ou fermer les demandes de logement et bourse</p>
+        </div>
+        <div class="btn-group">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+            </a>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger">
+                <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stat-box">
+                <h3 class="text-primary">{{ logement_count }}</h3>
+                <p class="text-muted">Demandes de logement</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-box">
+                <h3 class="text-warning">{{ logement_pending }}</h3>
+                <p class="text-muted">En attente (logement)</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-box">
+                <h3 class="text-success">{{ bourse_count }}</h3>
+                <p class="text-muted">Demandes de bourse</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-box">
+                <h3 class="text-info">{{ bourse_pending }}</h3>
+                <p class="text-muted">En attente (bourse)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Cards -->
+    <div class="row">
+        <!-- Logement Card -->
+        <div class="col-lg-6 mb-4">
+            <div class="card status-card h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-home me-2 text-primary"></i>Demandes de Logement
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h6 class="mb-0">Statut des inscriptions</h6>
+                            <small class="text-muted">
+                                {% if app_status and app_status.logement_open %}
+                                    <span class="text-success"><i class="fas fa-check-circle me-1"></i>Ouvertes</span>
+                                {% else %}
+                                    <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Fermées</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="switch-container">
+                            <label class="slider-label">
+                                <input type="checkbox" id="logementToggle" 
+                                       {% if app_status and app_status.logement_open %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="alert {% if app_status and app_status.logement_open %}alert-success{% else %}alert-secondary{% endif %} mb-0">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                {% if app_status and app_status.logement_open %}
+                                    <strong>Les inscriptions sont ouvertes</strong>
+                                    <p class="mb-0 small">Les étudiants peuvent soumettre leurs demandes de logement.</p>
+                                {% else %}
+                                    <strong>Les inscriptions sont fermées</strong>
+                                    <p class="mb-0 small">Les étudiants ne peuvent pas soumettre de nouvelles demandes.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bourse Card -->
+        <div class="col-lg-6 mb-4">
+            <div class="card status-card h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2 text-warning"></i>Demandes de Bourse
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h6 class="mb-0">Statut des inscriptions</h6>
+                            <small class="text-muted">
+                                {% if app_status and app_status.bourse_open %}
+                                    <span class="text-success"><i class="fas fa-check-circle me-1"></i>Ouvertes</span>
+                                {% else %}
+                                    <span class="text-danger"><i class="fas fa-times-circle me-1"></i>Fermées</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="switch-container">
+                            <label class="slider-label">
+                                <input type="checkbox" id="bourseToggle" 
+                                       {% if app_status and app_status.bourse_open %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="alert {% if app_status and app_status.bourse_open %}alert-success{% else %}alert-secondary{% endif %} mb-0">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                {% if app_status and app_status.bourse_open %}
+                                    <strong>Les inscriptions sont ouvertes</strong>
+                                    <p class="mb-0 small">Les étudiants peuvent soumettre leurs demandes de bourse.</p>
+                                {% else %}
+                                    <strong>Les inscriptions sont fermées</strong>
+                                    <p class="mb-0 small">Les étudiants ne peuvent pas soumettre de nouvelles demandes.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Form -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('admin_application_status') }}" id="statusForm">
+                        <input type="hidden" name="logement_open" id="logementHidden" 
+                               value="{{ 'on' if app_status and app_status.logement_open else '' }}">
+                        <input type="hidden" name="bourse_open" id="bourseHidden" 
+                               value="{{ 'on' if app_status and app_status.bourse_open else '' }}">
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">Modifier le statut</h5>
+                                <small class="text-muted">Utilisez les interrupteurs ci-dessus pour ouvrir/fermer les inscriptions</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const logementToggle = document.getElementById('logementToggle');
+    const bourseToggle = document.getElementById('bourseToggle');
+    const logementHidden = document.getElementById('logementHidden');
+    const bourseHidden = document.getElementById('bourseHidden');
+    const statusForm = document.getElementById('statusForm');
+    
+    // Update hidden inputs when toggles change
+    logementToggle.addEventListener('change', function() {
+        logementHidden.value = this.checked ? 'on' : '';
+    });
+    
+    bourseToggle.addEventListener('change', function() {
+        bourseHidden.value = this.checked ? 'on' : '';
+    });
+    
+    // Confirm before submitting
+    statusForm.addEventListener('submit', function(e) {
+        const logementStatus = logementToggle.checked ? 'OUVERTES' : 'FERMEES';
+        const bourseStatus = bourseToggle.checked ? 'OUVERTES' : 'FERMEES';
+        
+        if (!confirm(`Êtes-vous sûr de vouloir :\n\nDemandes de logement : ${logementStatus}\nDemandes de bourse : ${bourseStatus}\n\nCette action affectera la possibilité pour les étudiants de soumettre des demandes.`)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

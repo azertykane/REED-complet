@@ -9,17 +9,20 @@
             <div class="col-lg-6 order-2 order-lg-1 text-center text-lg-start">
                 <h1 class="display-5 fw-bold mb-3">Bienvenue au Rassemblement des Élèves et Étudiants De Diamniadio</h1>
                 <p class="lead mb-4">Rejoignez notre communauté éléves et étudiantes.</p>
-                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
-                    <a href="{{ url_for('formulaire') }}" class="btn btn-primary btn-lg mb-2 mb-sm-0">
-                        <i class="fas fa-file-alt me-2"></i>Faire une demande
-                    </a>
-                    <a href="{{ url_for('admis') }}" class="btn btn-success btn-lg mb-2 mb-sm-0">
-                       <i class="fas fa-users me-2"></i>Voir les admis
-                    </a>
-                    <a href="#about" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-info-circle me-2"></i>En savoir plus
-                    </a>
-                </div>
+                    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+                        <a href="{{ url_for('formulaire') }}" class="btn btn-primary btn-lg mb-2 mb-sm-0">
+                            <i class="fas fa-home me-2"></i>Demande de logement
+                        </a>
+                        <a href="{{ url_for('bourse_info') }}" class="btn btn-warning btn-lg mb-2 mb-sm-0">
+                            <i class="fas fa-graduation-cap me-2"></i>Demande de bourse
+                        </a>
+                        <a href="{{ url_for('admis') }}" class="btn btn-success btn-lg mb-2 mb-sm-0">
+                           <i class="fas fa-users me-2"></i>Voir les admis
+                        </a>
+                        <a href="#about" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-info-circle me-2"></i>En savoir plus
+                        </a>
+                    </div>
             </div>
             <div class="col-lg-6 order-1 order-lg-2 mb-4 mb-lg-0">
                 <div class="hero-image">

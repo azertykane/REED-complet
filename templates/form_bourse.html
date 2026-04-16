@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Formulaire de Demande de Bourse - REED{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        color: white;
+    }
+    .document-upload {
+        border: 2px dashed var(--light-blue);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        background: var(--light-gray);
+        transition: all 0.3s ease;
+        height: 100%;
+        margin-bottom: 1rem;
+    }
+    .document-upload:hover {
+        border-color: var(--secondary-blue);
+        background: var(--light-blue);
+    }
+    .bourse-info {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+    }
+    .bourse-requirements {
+        background: white;
+        border-left: 4px solid #f093fb;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border-radius: 0 10px 10px 0;
+    }
+    #progress-bar {
+        height: 4px;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="h3 fw-bold mb-2">Formulaire de demande de bourse</h1>
+                <p class="lead mb-0">Remplissez ce formulaire pour faire une demande de bourse</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <!-- Informations sur les bourses -->
+            <div class="bourse-info">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="fw-bold mb-3">
+                            <i class="fas fa-graduation-cap me-2"></i>Pour les élèves
+                        </h4>
+                        <ul class="mb-0 ps-3">
+                            <li>Demande manuscrite adressée au Maire</li>
+                            <li>Certificat de Scolarité</li>
+                            <li>Certificat de Résidence</li>
+                            <li>Carte membre REED</li>
+                            <li>Bulletin 2ème Semestre</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h4 class="fw-bold mb-3">
+                            <i class="fas fa-university me-2"></i>Pour les étudiants
+                        </h4>
+                        <ul class="mb-0 ps-3">
+                            <li>Demande manuscrite adressée au Maire</li>
+                            <li>Carte étudiant ou certificat d'inscription validé</li>
+                            <li>Photocopie carte d'identité</li>
+                            <li>Certificat de Résidence</li>
+                            <li>Carte membre REED</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow border-0 mb-4">
+                <div class="card-body p-3 p-md-4">
+                    <form method="POST" action="{{ url_for('formulaire_bourse') }}" enctype="multipart/form-data" id="demandeBourseForm">
+                        <h3 class="h5 mb-3 text-primary">
+                            <i class="fas fa-user-circle me-2"></i>Informations personnelles
+                        </h3>
+                        
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="nom" class="form-label fw-semibold">Nom *</label>
+                                <input type="text" class="form-control" id="nom" name="nom" required>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="prenom" class="form-label fw-semibold">Prénom *</label>
+                                <input type="text" class="form-control" id="prenom" name="prenom" required>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="adresse" class="form-label fw-semibold">Adresse complète *</label>
+                                <textarea class="form-control" id="adresse" name="adresse" rows="2" required></textarea>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="telephone" class="form-label fw-semibold">Numéro de téléphone *</label>
+                                <input type="tel" class="form-control" id="telephone" name="telephone" required>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="email" class="form-label fw-semibold">Email *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="region_universitaire" class="form-label">Région universitaire *</label>
+                                <select class="form-select" id="region_universitaire" name="region_universitaire" required>
+                                    <option value="">Sélectionnez votre région...</option>
+                                    {% for region in regions_universitaires %}
+                                    <option value="{{ region }}">{{ region }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="form-text text-muted">Région où vous étudiez</small>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h3 class="h5 mb-3 text-primary">
+                            <i class="fas fa-file-upload me-2"></i>Documents à fournir
+                        </h3>
+                        <p class="text-muted mb-3">Tous les documents doivent être au format PDF (max 16MB)</p>
+
+                        <div class="row">
+                            <!-- Documents pour bourse -->
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                <div class="document-upload">
+                                    <label for="demande_manuscrite" class="form-label fw-semibold">
+                                        <i class="fas fa-pen-fancy me-1"></i>Demande manuscrite *
+                                    </label>
+                                    <input type="file" class="form-control form-control-sm" id="demande_manuscrite" 
+                                           name="demande_manuscrite" accept=".pdf" required>
+                                    <small class="form-text text-muted d-block mt-1">Lettre manuscrite de motivation</small>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                <div class="document-upload">
+                                    <label for="certificat_scolarite" class="form-label fw-semibold">
+                                        <i class="fas fa-graduation-cap me-1"></i>Certificat de scolarité *
+                                    </label>
+                                    <input type="file" class="form-control form-control-sm" id="certificat_scolarite" 
+                                           name="certificat_scolarite" accept=".pdf" required>
+                                    <small class="form-text text-muted d-block mt-1">Pour les élèves</small>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                <div class="document-upload">
+                                    <label for="certificat_residence" class="form-label fw-semibold">
+                                        <i class="fas fa-home me-1"></i>Certificat de résidence *
+                                    </label>
+                                    <input type="file" class="form-control form-control-sm" id="certificat_residence" 
+                                           name="certificat_residence" accept=".pdf" required>
+                                    <small class="form-text text-muted d-block mt-1">Justificatif de domicile</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                <div class="document-upload">
+                                    <label for="carte_membre_reed" class="form-label fw-semibold">
+                                        <i class="fas fa-address-card me-1"></i>Carte membre REED *
+                                    </label>
+                                    <input type="file" class="form-control form-control-sm" id="carte_membre_reed" 
+                                           name="carte_membre_reed" accept=".pdf" required>
+                                    <small class="form-text text-muted d-block mt-1">Carte de membre REED valide</small>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                <div class="document-upload">
+                                    <label for="bulletin_s2" class="form-label fw-semibold">
+                                        <i class="fas fa-file-alt me-1"></i>Bulletin 2ème Semestre *
+                                    </label>
+                                    <input type="file" class="form-control form-control-sm" id="bulletin_s2" 
+                                           name="bulletin_s2" accept=".pdf" required>
+                                    <small class="form-text text-muted d-block mt-1">Pour les élèves</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-3">
+                            <h5 class="h6 mb-2"><i class="fas fa-info-circle me-2"></i>Important</h5>
+                            <ul class="mb-0 ps-3">
+                                <li class="mb-1">Tous les champs marqués d'un * sont obligatoires</li>
+                                <li class="mb-1">Votre demande sera traitée au lendemain de fermeture des dépots</li>
+                                <li class="mb-1">Vous recevrez une notification par email du résultat</li>
+                                <li class="mb-1">Les documents doivent être scannés et convertis en pdf</li>
+                            </ul>
+                        </div>
+
+                        <div class="progress d-none" id="progress-container">
+                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <p id="progress-text" class="text-center d-none small mb-3">Traitement en cours...</p>
+
+                        <div class="d-flex flex-column flex-md-row gap-2 justify-content-end mt-4">
+                            <button type="reset" class="btn btn-outline-secondary order-2 order-md-1">
+                                <i class="fas fa-undo me-1"></i>Effacer
+                            </button>
+                            <button type="submit" class="btn btn-primary order-1 order-md-2" id="submit-btn">
+                                <i class="fas fa-paper-plane me-1"></i>Soumettre la demande
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('demandeBourseForm');
+    const submitBtn = document.getElementById('submit-btn');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    
+    form.addEventListener('submit', function(e) {
+        // Validation des fichiers
+        const fileInputs = form.querySelectorAll('input[type="file"]');
+        let allFilesValid = true;
+        
+        fileInputs.forEach(input => {
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                const maxSize = 16 * 1024 * 1024; // 16MB
+                
+                if (!validTypes.includes(file.type)) {
+                    alert(`❌ Le fichier ${input.previousElementSibling.textContent.trim()} doit être au format PDF, JPG ou PNG`);
+                    allFilesValid = false;
+                    e.preventDefault();
+                }
+                
+                if (file.size > maxSize) {
+                    alert(`⚠️ Le fichier ${input.previousElementSibling.textContent.trim()} est trop volumineux (max 16MB)`);
+                    allFilesValid = false;
+                    e.preventDefault();
+                }
+            }
+        });
+        
+        if (allFilesValid) {
+            // Afficher la progression
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Traitement...';
+            progressContainer.classList.remove('d-none');
+            progressText.classList.remove('d-none');
+            
+            // Animation de progression
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                if (progress <= 90) {
+                    progressBar.style.width = progress + '%';
+                }
+            }, 300);
+            
+            // Nettoyer l'intervalle lors de la soumission
+            form.addEventListener('submit', function() {
+                clearInterval(interval);
+            }, { once: true });
+        }
+    });
+    
+    // Reset du formulaire
+    form.addEventListener('reset', function() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Soumettre la demande';
+        progressContainer.classList.add('d-none');
+        progressText.classList.add('d-none');
+        progressBar.style.width = '0%';
+    });
+});
+</script>
+{% endblock %}
