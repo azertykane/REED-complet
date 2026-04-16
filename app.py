@@ -37,7 +37,6 @@ def init_database():
             print("✓ Base de données initialisée")
         except Exception as e:
             print(f"✗ Erreur création base de données: {str(e)}")
-            # Si erreur, essayer avec force
             try:
                 db.drop_all()
                 db.create_all()
@@ -60,16 +59,13 @@ def send_email_sendgrid(to_email, subject, body, from_email=None):
                 print("✗ Expéditeur non configuré")
                 return False
         
-        # URL de l'API SendGrid
         url = "https://api.sendgrid.com/v3/mail/send"
         
-        # Headers avec l'API Key
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         
-        # Données JSON pour SendGrid
         data = {
             "personalizations": [
                 {
@@ -86,7 +82,6 @@ def send_email_sendgrid(to_email, subject, body, from_email=None):
             ]
         }
         
-        # Envoyer la requête avec timeout
         response = requests.post(url, headers=headers, json=data, timeout=30)
         
         if response.status_code in [200, 202]:
@@ -103,7 +98,6 @@ def send_email_sendgrid(to_email, subject, body, from_email=None):
         print(f"✗ Exception SendGrid pour {to_email}: {str(e)}")
         return False
 
-# Fonction pour envoyer des emails en arrière-plan
 def send_email_async(to_email, subject, body):
     """Envoyer un email en arrière-plan"""
     try:
@@ -120,11 +114,20 @@ def index():
 def information():
     return render_template('information.html')
 
+# CORRECTION: Route formulaire logement avec vérification ouverture/fermeture
 @app.route('/formulaire', methods=['GET', 'POST'])
 def formulaire():
+    # Vérifier si les demandes de logement sont ouvertes
+    app_status = ApplicationStatus.query.first()
+    logement_open = app_status.logement_open if app_status else False
+    
+    # Si formulaire fermé, afficher la page "fermé"
+    if not logement_open:
+        return render_template('form.html')  # Page avec message "Inscriptions Closes"
+    
+    # Sinon, traiter le formulaire normalement
     if request.method == 'POST':
         try:
-            # Get form data
             nom = request.form.get('nom', '').strip()
             prenom = request.form.get('prenom', '').strip()
             adresse = request.form.get('adresse', '').strip()
@@ -132,22 +135,18 @@ def formulaire():
             email = request.form.get('email', '').strip().lower()
             region_universitaire = request.form.get('region_universitaire', 'Dakar').strip()
             
-            # Validate required fields
             if not all([nom, prenom, adresse, telephone, email, region_universitaire]):
                 flash('Tous les champs sont obligatoires', 'error')
                 return redirect(url_for('formulaire'))
             
-            # Validate email format
             if '@' not in email or '.' not in email:
                 flash('Format d\'email invalide', 'error')
                 return redirect(url_for('formulaire'))
             
-            # Validate phone number
             if not telephone.replace(' ', '').replace('+', '').isdigit():
                 flash('Numéro de téléphone invalide', 'error')
                 return redirect(url_for('formulaire'))
             
-            # Create new student request
             new_request = StudentRequest(
                 nom=nom,
                 prenom=prenom,
@@ -155,11 +154,10 @@ def formulaire():
                 telephone=telephone,
                 email=email,
                 region_universitaire=region_universitaire,
+                request_type='logement',
                 status='pending'
-                
             )
             
-            # Handle file uploads
             files_required = {
                 'certificat_inscription': 'certificat_inscription',
                 'certificat_residence': 'certificat_residence', 
@@ -168,7 +166,6 @@ def formulaire():
                 'copie_cni': 'copie_cni'
             }
             
-            # Vérifier d'abord tous les fichiers
             for field, file_key in files_required.items():
                 file = request.files.get(file_key)
                 if not file or file.filename == '':
@@ -179,32 +176,24 @@ def formulaire():
                     flash(f'Le fichier {field.replace("_", " ")} doit être au format PDF, PNG ou JPG', 'error')
                     return redirect(url_for('formulaire'))
             
-            # Sauvegarder la demande d'abord
             db.session.add(new_request)
-            db.session.flush()  # Get the ID without committing
+            db.session.flush()
             
-            # Ensuite sauvegarder les fichiers
             for field, file_key in files_required.items():
                 file = request.files.get(file_key)
                 if file and file.filename and allowed_file(file.filename):
-                    # Utiliser un nom de fichier simple
                     ext = file.filename.rsplit('.', 1)[1].lower()
                     filename = secure_filename(f"{new_request.id}_{field}.{ext}")
                     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    
-                    # Sauvegarder le fichier
                     file.save(filepath)
                     setattr(new_request, field, filename)
             
-            # Commit toutes les données
             db.session.commit()
             
-            # Envoyer l'email de confirmation en arrière-plan
             try:
                 send_confirmation_email(email, nom, prenom, new_request.id)
             except Exception as email_error:
                 print(f"Erreur programmation email: {email_error}")
-                # Ne pas bloquer l'utilisateur si l'email échoue
             
             flash('Votre demande a été soumise avec succès!', 'success')
             return redirect(url_for('information'))
@@ -214,12 +203,13 @@ def formulaire():
             print(f"Erreur lors de la soumission: {str(e)}")
             flash('Une erreur est survenue. Veuillez réessayer.', 'error')
             return redirect(url_for('formulaire'))
+    
     regions_universitaires = [
         'Dakar', 'Thiès', 'Saint-Louis', 'Ziguinchor', 'Kolda',
         'Tambacounda', 'Kaolack', 'Fatick', 'Diourbel', 'Louga',
         'Matam', 'Kédougou', 'Sédhiou'
     ]
-    return render_template('form.html', regions_universitaires=regions_universitaires)
+    return render_template('forms.html', regions_universitaires=regions_universitaires)
 
 def send_confirmation_email(to_email, nom, prenom, request_id):
     """Envoyer un email de confirmation à l'étudiant"""
@@ -237,7 +227,6 @@ La Commission Sociale REED
 """
     
     try:
-        # Envoyer en arrière-plan
         thread = threading.Thread(
             target=send_email_async,
             args=(to_email, subject, message)
@@ -255,7 +244,6 @@ def admin_login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         
-        # Utilisez les variables d'environnement
         admin_username = app.config['ADMIN_USERNAME']
         admin_password = app.config['ADMIN_PASSWORD']
         
@@ -281,7 +269,6 @@ def admin_dashboard():
         approved_count = StudentRequest.query.filter_by(status='approved').count()
         rejected_count = StudentRequest.query.filter_by(status='rejected').count()
         
-        # NOUVEAU: Statistiques par région
         regions_stats = {}
         regions = StudentRequest.query.with_entities(
             StudentRequest.region_universitaire,
@@ -296,7 +283,7 @@ def admin_dashboard():
                              pending_count=pending_count,
                              approved_count=approved_count,
                              rejected_count=rejected_count,
-                             regions_stats=regions_stats)  # NOUVEAU
+                             regions_stats=regions_stats)
         
     except Exception as e:
         print(f"Erreur dashboard: {str(e)}")
@@ -324,15 +311,12 @@ def view_request(request_id):
 def serve_uploaded_file(filename):
     """Servir les fichiers uploadés depuis le dossier d'uploads"""
     try:
-        # Chemin sécurisé vers le fichier
         upload_folder = app.config['UPLOAD_FOLDER']
         file_path = os.path.join(upload_folder, filename)
         
-        # Vérifier que le fichier existe et est dans le bon dossier
         if not os.path.exists(file_path):
             return "Fichier non trouvé", 404
         
-        # Servir le fichier
         return send_from_directory(upload_folder, filename)
     except Exception as e:
         print(f"Erreur serveur fichier: {str(e)}")
@@ -384,7 +368,6 @@ def update_status(request_id):
             student_request.date_processed = datetime.utcnow()
             db.session.commit()
             
-            # Envoyer un email à l'étudiant si le statut change
             if old_status != status:
                 send_status_email(student_request, status, notes)
             
@@ -402,26 +385,26 @@ def send_status_email(student, status, notes):
         return
     
     if status == 'approved':
-        subject = "Félicitations ! Votre demande de logement a été acceptée"
+        subject = "Félicitations ! Votre demande a été acceptée"
         message = f"""Cher(e) {student.prenom} {student.nom},
 
-Nous avons le plaisir de vous informer que votre demande de logement au sein des appartements du REED a été approuvée.
+Nous avons le plaisir de vous informer que votre demande a été approuvée.
 
 Bienvenue dans notre communauté !
 
 """
     elif status == 'rejected':
-        subject = "Décision concernant votre demande de logement"
+        subject = "Décision concernant votre demande"
         message = f"""Cher(e) {student.prenom} {student.nom},
 
-Après examen de votre demande de logement du (ID: {student.de}), nous regrettons de vous informer qu'elle n'a pas pu être acceptée pour le moment.
+Après examen de votre demande, nous regrettons de vous informer qu'elle n'a pas pu être acceptée pour le moment.
 
 """
     else:
-        subject = "Mise à jour sur votre demande de logement"
+        subject = "Mise à jour sur votre demande"
         message = f"""Cher(e) {student.prenom} {student.nom},
 
-Votre demande de logement du (ID: {student.date}) est actuellement en cours de traitement par notre équipe.
+Votre demande est actuellement en cours de traitement par notre équipe.
 
 Nous vous contacterons dès que nous aurons une décision.
 
@@ -438,7 +421,6 @@ La Commission Sociale REED
 """
     
     try:
-        # Envoyer en arrière-plan
         thread = threading.Thread(
             target=send_email_async,
             args=(student.email, subject, message)
@@ -469,7 +451,6 @@ def send_email():
         if not subject or not message:
             return jsonify({'error': 'Sujet et message sont requis'}), 400
         
-        # Récupérer les destinataires
         emails_list = []
         recipients = []
         
@@ -488,7 +469,7 @@ def send_email():
                 emails_list = [s.email for s in recipients if s.email]
             elif recipient_type == 'custom' and custom_emails:
                 emails_list = [email.strip() for email in custom_emails if email.strip()]
-                recipients = []  # Pas de données étudiant pour emails personnalisés
+                recipients = []
             else:
                 recipients = StudentRequest.query.all()
                 emails_list = [s.email for s in recipients if s.email]
@@ -496,21 +477,16 @@ def send_email():
             print(f"Erreur DB: {str(db_error)}")
             return jsonify({'error': 'Erreur base de données'}), 500
         
-        # Filtrer les emails valides
         valid_emails = [email for email in emails_list if email and '@' in email and '.' in email]
         
         if not valid_emails:
             return jsonify({'error': 'Aucun destinataire valide trouvé'}), 400
         
-        # Limiter à 10 emails pour éviter les limites
         valid_emails = valid_emails[:10]
-        
-        # Envoyer les emails en arrière-plan
         sent_count = 0
         
         for email in valid_emails:
             try:
-                # Personnaliser le message si possible
                 personalized_message = message
                 if recipient_type in ['approved', 'rejected', 'pending', 'selected', 'all'] and recipients:
                     student = next((s for s in recipients if s.email == email), None)
@@ -521,7 +497,6 @@ def send_email():
                         if student.date_submitted:
                             personalized_message = personalized_message.replace('{date}', student.date_submitted.strftime('%d/%m/%Y'))
                 
-                # Envoyer en arrière-plan
                 thread = threading.Thread(
                     target=send_email_async,
                     args=(email, subject, personalized_message)
@@ -529,14 +504,11 @@ def send_email():
                 thread.daemon = True
                 thread.start()
                 sent_count += 1
-                
-                # Petite pause pour éviter le rate limiting
                 time.sleep(0.3)
                     
             except Exception as e:
                 print(f"Erreur pour {email}: {str(e)}")
         
-        # Préparer la réponse
         response_data = {
             'success': True, 
             'message': f'Envoi lancé pour {sent_count} email(s).',
@@ -557,22 +529,18 @@ def download_report():
         return redirect(url_for('admin_login'))
     
     try:
-        # Create PDF report
         buffer = io.BytesIO()
         p = canvas.Canvas(buffer, pagesize=letter)
         width, height = letter
         
-        # Title
         p.setFont("Helvetica-Bold", 16)
         p.setFillColor(HexColor("#1E3A8A"))
-        p.drawString(1*inch, height - 1*inch, "Rapport des Demandes - Amicale des Étudiants")
+        p.drawString(1*inch, height - 1*inch, "Rapport des Demandes - REED")
         
-        # Date
         p.setFont("Helvetica", 10)
         p.setFillColor(HexColor("#666666"))
         p.drawString(1*inch, height - 1.2*inch, f"Généré le: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
         
-        # Statistics
         y_position = height - 2*inch
         
         p.setFont("Helvetica-Bold", 12)
@@ -583,7 +551,6 @@ def download_report():
         p.setFont("Helvetica", 10)
         p.setFillColor(HexColor("#000000"))
         
-        # Get counts
         total = StudentRequest.query.count()
         pending = StudentRequest.query.filter_by(status='pending').count()
         approved = StudentRequest.query.filter_by(status='approved').count()
@@ -600,7 +567,6 @@ def download_report():
             p.drawString(1.2*inch, y_position, stat)
             y_position -= 0.2*inch
         
-        # List of requests
         y_position -= 0.3*inch
         p.setFont("Helvetica-Bold", 12)
         p.setFillColor(HexColor("#1E3A8A"))
@@ -609,7 +575,6 @@ def download_report():
         y_position -= 0.3*inch
         p.setFont("Helvetica", 8)
         
-        # Table header
         p.setFillColor(HexColor("#FBBF24"))
         p.rect(1*inch, y_position - 0.1*inch, 6.5*inch, 0.25*inch, fill=1, stroke=0)
         p.setFillColor(HexColor("#000000"))
@@ -623,10 +588,9 @@ def download_report():
         
         y_position -= 0.3*inch
         
-        # Table rows
         requests = StudentRequest.query.order_by(StudentRequest.date_submitted.desc()).all()
         for req in requests:
-            if y_position < 1*inch:  # New page if needed
+            if y_position < 1*inch:
                 p.showPage()
                 p.setFont("Helvetica", 8)
                 y_position = height - 1*inch
@@ -653,7 +617,7 @@ def download_report():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f"rapport_amicale_{datetime.now().strftime('%Y%m%d')}.pdf",
+            download_name=f"rapport_reed_{datetime.now().strftime('%Y%m%d')}.pdf",
             mimetype='application/pdf'
         )
     
@@ -689,7 +653,7 @@ def admin_test_email():
         if email:
             success = send_email_sendgrid(
                 email, 
-                "Test d'email - Amicale des Étudiants", 
+                "Test d'email - REED", 
                 "Ceci est un email de test depuis votre application sur Render."
             )
             
@@ -760,10 +724,8 @@ def delete_request(request_id):
         return jsonify({'error': 'Non autorisé'}), 401
     
     try:
-        # Récupérer la demande
         student_request = StudentRequest.query.get_or_404(request_id)
         
-        # Supprimer les fichiers associés
         files_to_delete = [
             student_request.certificat_inscription,
             student_request.certificat_residence,
@@ -782,7 +744,6 @@ def delete_request(request_id):
                     except Exception as e:
                         print(f"✗ Erreur suppression fichier {filename}: {str(e)}")
         
-        # Supprimer de la base de données
         db.session.delete(student_request)
         db.session.commit()
         
@@ -795,7 +756,6 @@ def delete_request(request_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-# AJOUTER: Route pour supprimer plusieurs demandes
 @app.route('/admin/delete_requests', methods=['POST'])
 def delete_requests():
     """Supprimer plusieurs demandes"""
@@ -820,7 +780,6 @@ def delete_requests():
             try:
                 student_request = StudentRequest.query.get(request_id)
                 if student_request:
-                    # Supprimer les fichiers
                     files_to_delete = [
                         student_request.certificat_inscription,
                         student_request.certificat_residence,
@@ -835,7 +794,6 @@ def delete_requests():
                             if os.path.exists(filepath):
                                 os.remove(filepath)
                     
-                    # Supprimer de la base
                     db.session.delete(student_request)
                     deleted_count += 1
                     
@@ -856,7 +814,6 @@ def delete_requests():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-# AJOUTER: Route pour vider toutes les demandes (optionnel - attention)
 @app.route('/admin/delete_all_requests', methods=['POST'])
 def delete_all_requests():
     """Supprimer toutes les demandes (ATTENTION: action irréversible)"""
@@ -864,18 +821,15 @@ def delete_all_requests():
         return jsonify({'error': 'Non autorisé'}), 401
     
     try:
-        # Vérifier la confirmation
         data = request.get_json()
         if not data or not data.get('confirm'):
             return jsonify({'error': 'Confirmation requise'}), 400
         
-        # Récupérer toutes les demandes
         all_requests = StudentRequest.query.all()
         deleted_count = 0
         
         for student_request in all_requests:
             try:
-                # Supprimer les fichiers
                 files_to_delete = [
                     student_request.certificat_inscription,
                     student_request.certificat_residence,
@@ -890,7 +844,6 @@ def delete_all_requests():
                         if os.path.exists(filepath):
                             os.remove(filepath)
                 
-                # Supprimer de la base
                 db.session.delete(student_request)
                 deleted_count += 1
                 
@@ -908,7 +861,6 @@ def delete_all_requests():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/debug')
 def debug():
@@ -930,7 +882,7 @@ def admin_logout():
 
 @app.route('/ping')
 def ping():
-    """Route pour le keep-alive - maintient l'application active sur Render"""
+    """Route pour le keep-alive"""
     return jsonify({
         'status': 'alive',
         'timestamp': datetime.utcnow().isoformat(),
@@ -939,9 +891,8 @@ def ping():
 
 @app.route('/health')
 def health():
-    """Route de santé pour vérifier l'état de l'application"""
+    """Route de santé"""
     try:
-        # Vérifier la base de données
         StudentRequest.query.first()
         db_status = 'OK'
     except:
@@ -961,7 +912,6 @@ def admis():
     try:
         with open(json_path, 'r', encoding='utf-8') as f:
             admis_list = json.load(f)
-        # Trier par nom (optionnel)
         admis_list.sort(key=lambda x: x['nom'])
         return render_template('admis.html', admis=admis_list)
     except FileNotFoundError:
@@ -969,20 +919,23 @@ def admis():
     except Exception as e:
         return f"Erreur lors du chargement des données : {str(e)}", 500
 
-# Routes pour les bourses
+# CORRECTION: Route bourse - redirige vers formulaire si ouvert, sinon page fermée
 @app.route('/bourse')
 def bourse_info():
     """Page d'information sur les bourses"""
-    # Vérifier si les demandes de bourses sont ouvertes
     app_status = ApplicationStatus.query.first()
     bourse_open = app_status.bourse_open if app_status else False
     
-    return render_template('forms_bourse.html', bourse_open=bourse_open)
+    if bourse_open:
+        # Si ouvert, rediriger vers le formulaire
+        return redirect(url_for('formulaire_bourse'))
+    else:
+        # Si fermé, afficher la page "fermé"
+        return render_template('forms_bourse.html', bourse_open=bourse_open)
 
 @app.route('/formulaire_bourse', methods=['GET', 'POST'])
 def formulaire_bourse():
     """Formulaire de demande de bourse"""
-    # Vérifier si les demandes de bourses sont ouvertes
     app_status = ApplicationStatus.query.first()
     if not app_status or not app_status.bourse_open:
         flash('Les demandes de bourses ne sont pas ouvertes pour le moment.', 'error')
@@ -990,7 +943,6 @@ def formulaire_bourse():
     
     if request.method == 'POST':
         try:
-            # Get form data
             nom = request.form.get('nom', '').strip()
             prenom = request.form.get('prenom', '').strip()
             adresse = request.form.get('adresse', '').strip()
@@ -998,22 +950,18 @@ def formulaire_bourse():
             email = request.form.get('email', '').strip().lower()
             region_universitaire = request.form.get('region_universitaire', 'Dakar').strip()
             
-            # Validate required fields
             if not all([nom, prenom, adresse, telephone, email, region_universitaire]):
                 flash('Tous les champs sont obligatoires', 'error')
                 return redirect(url_for('formulaire_bourse'))
             
-            # Validate email format
             if '@' not in email or '.' not in email:
                 flash('Format d\'email invalide', 'error')
                 return redirect(url_for('formulaire_bourse'))
             
-            # Validate phone number
             if not telephone.replace(' ', '').replace('+', '').isdigit():
                 flash('Numéro de téléphone invalide', 'error')
                 return redirect(url_for('formulaire_bourse'))
             
-            # Create new student request for bourse
             new_request = StudentRequest(
                 nom=nom,
                 prenom=prenom,
@@ -1025,7 +973,6 @@ def formulaire_bourse():
                 status='pending'
             )
             
-            # Handle file uploads for bourse
             files_required = {
                 'demande_manuscrite': 'demande_manuscrite',
                 'certificat_scolarite': 'certificat_scolarite',
@@ -1034,7 +981,6 @@ def formulaire_bourse():
                 'bulletin_s2': 'bulletin_s2'
             }
             
-            # Vérifier d'abord tous les fichiers
             for field, file_key in files_required.items():
                 file = request.files.get(file_key)
                 if not file or file.filename == '':
@@ -1045,27 +991,20 @@ def formulaire_bourse():
                     flash(f'Le fichier {field.replace("_", " ")} doit être au format PDF, PNG ou JPG', 'error')
                     return redirect(url_for('formulaire_bourse'))
             
-            # Sauvegarder la demande d'abord
             db.session.add(new_request)
-            db.session.flush()  # Get the ID without committing
+            db.session.flush()
             
-            # Ensuite sauvegarder les fichiers
             for field, file_key in files_required.items():
                 file = request.files.get(file_key)
                 if file and file.filename and allowed_file(file.filename):
-                    # Utiliser un nom de fichier simple
                     ext = file.filename.rsplit('.', 1)[1].lower()
                     filename = secure_filename(f"{new_request.id}_{field}.{ext}")
                     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    
-                    # Sauvegarder le fichier
                     file.save(filepath)
                     setattr(new_request, field, filename)
             
-            # Commit toutes les données
             db.session.commit()
             
-            # Envoyer l'email de confirmation en arrière-plan
             try:
                 send_confirmation_email_bourse(email, nom, prenom, new_request.id)
             except Exception as email_error:
@@ -1103,7 +1042,6 @@ La Commission Sociale REED
 """
     
     try:
-        # Envoyer en arrière-plan
         thread = threading.Thread(
             target=send_email_async,
             args=(to_email, subject, message)
@@ -1115,7 +1053,6 @@ La Commission Sociale REED
     except Exception as email_error:
         print(f"✗ Erreur d'envoi d'email: {email_error}")
 
-# Routes pour gérer l'ouverture/fermeture des demandes
 @app.route('/admin/application_status', methods=['GET', 'POST'])
 def admin_application_status():
     """Gérer l'ouverture/fermeture des demandes de logement et bourse"""
@@ -1147,7 +1084,6 @@ def admin_application_status():
             db.session.rollback()
             flash(f'Erreur lors de la mise à jour: {str(e)}', 'error')
     
-    # Compter les demandes par type
     logement_count = StudentRequest.query.filter_by(request_type='logement').count()
     bourse_count = StudentRequest.query.filter_by(request_type='bourse').count()
     logement_pending = StudentRequest.query.filter_by(request_type='logement', status='pending').count()
@@ -1172,10 +1108,15 @@ def internal_server_error(e):
 
 # Initialisation
 if __name__ == '__main__':
-    # Initialiser la base de données
     with app.app_context():
         try:
             db.create_all()
+            # Créer le statut par défaut s'il n'existe pas
+            if not ApplicationStatus.query.first():
+                default_status = ApplicationStatus(logement_open=False, bourse_open=False)
+                db.session.add(default_status)
+                db.session.commit()
+                print("✓ Statut par défaut créé (fermé)")
             print("✓ Base de données initialisée")
         except Exception as e:
             print(f"✗ Erreur initialisation DB: {str(e)}")

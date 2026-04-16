@@ -144,36 +144,38 @@
             </div>
         </div>
     </div>
+    
     <div class="row mb-4">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0">
-                <h5 class="mb-0">
-                    <i class="fas fa-map-marked-alt me-2"></i>Répartition par région universitaire
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    {% for region, count in regions_stats.items() %}
-                    <div class="col-md-3 col-sm-6 mb-3">
-                        <div class="card border-start border-primary border-3">
-                            <div class="card-body">
-                                <h6 class="card-title text-muted">{{ region }}</h6>
-                                <h4 class="card-text text-primary">{{ count }}</h4>
-                                <small class="text-muted">demande(s)</small>
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map-marked-alt me-2"></i>Répartition par région universitaire
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for region, count in regions_stats.items() %}
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="card border-start border-primary border-3">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">{{ region }}</h6>
+                                    <h4 class="card-text text-primary">{{ count }}</h4>
+                                    <small class="text-muted">demande(s)</small>
+                                </div>
                             </div>
                         </div>
+                        {% else %}
+                        <div class="col-12">
+                            <p class="text-muted text-center mb-0">Aucune donnée de région disponible</p>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% else %}
-                    <div class="col-12">
-                        <p class="text-muted text-center mb-0">Aucune donnée de région disponible</p>
-                    </div>
-                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
-</div>
+    
     <!-- Quick Actions -->
     <div class="row mb-4">
         <div class="col-12">
@@ -183,6 +185,10 @@
                         <i class="fas fa-bolt me-2 text-warning"></i>Actions rapides
                     </h5>
                     <div class="d-flex flex-wrap gap-2">
+                        <!-- NOUVEAU BOUTON : Gestion ouverture/fermeture -->
+                        <a href="{{ url_for('admin_application_status') }}" class="btn btn-info">
+                            <i class="fas fa-toggle-on me-2"></i>Gérer ouverture/fermeture
+                        </a>
                         <a href="#emailModal" class="btn btn-primary" data-bs-toggle="modal">
                             <i class="fas fa-paper-plane me-2"></i>Envoyer des emails
                         </a>
@@ -282,7 +288,7 @@
                         <tr class="request-item" data-status="{{ req.status }}" 
                             data-date="{{ req.date_submitted.strftime('%Y-%m-%d') }}"
                             data-search="{{ req.nom|lower }} {{ req.prenom|lower }} {{ req.email|lower }} {{ req.telephone }}">
-                            <td>
+                            <tr>
                                 <input type="checkbox" class="request-checkbox" 
                                        value="{{ req.id }}" 
                                        data-name="{{ req.prenom }} {{ req.nom }}"
@@ -355,26 +361,6 @@
                                         title="Supprimer">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                    <!-- Ajouter ce modal pour la confirmation de suppression -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
-                    <i class="fas fa-trash me-2"></i>Confirmation de suppression
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="deleteModalBody">
-                <!-- Contenu dynamique -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Supprimer</button>
-            </div>
-        </div>
-    </div>
-</div>
                                 </div>
                             </td>
                         </tr>
@@ -513,6 +499,27 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                 <button type="button" class="btn btn-primary" id="confirmModalAction">Confirmer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-trash me-2"></i>Confirmation de suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="deleteModalBody">
+                <!-- Contenu dynamique -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Supprimer</button>
             </div>
         </div>
     </div>
@@ -924,12 +931,10 @@ function openEmailComposer() {
 // Load templates from localStorage
 function loadTemplates() {
     const templates = JSON.parse(localStorage.getItem('emailTemplates') || '[]');
-    // You can implement template management here
 }
 
 // Notification functions
 function showLoading(message = 'Chargement...') {
-    // Create or show loading overlay
     let overlay = document.getElementById('loadingOverlay');
     if (!overlay) {
         overlay = document.createElement('div');
@@ -977,7 +982,6 @@ function showWarning(message) {
 }
 
 function showNotification(message, type = 'info') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
     notification.style.cssText = `
@@ -994,7 +998,6 @@ function showNotification(message, type = 'info') {
     
     document.body.appendChild(notification);
     
-    // Auto remove after 5 seconds
     setTimeout(() => {
         if (notification.parentNode) {
             notification.remove();
@@ -1030,26 +1033,10 @@ function updatePagination() {
     });
 }
 
-// Responsive adjustments
-if (window.matchMedia("(max-width: 768px)").matches) {
-    document.querySelectorAll('.action-buttons').forEach(container => {
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.gap = '2px';
-        
-        container.querySelectorAll('.btn').forEach(btn => {
-            btn.style.width = '100%';
-        });
-    });
-}
-
-// Dans la section JavaScript, ajouter ces fonctions
-
 // Supprimer une seule demande
 async function deleteSingleRequest(requestId, event = null) {
     if (event) event.stopPropagation();
     
-    // Afficher le modal de confirmation
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
     const requestRow = document.querySelector(`tr[data-search*="id:${requestId}"]`);
     const studentName = requestRow ? requestRow.querySelector('strong').textContent : `#${requestId}`;
@@ -1078,7 +1065,6 @@ async function deleteSingleRequest(requestId, event = null) {
             
             if (response.ok) {
                 showSuccess(result.message);
-                // Retirer la ligne du tableau sans recharger la page
                 const row = document.querySelector(`.request-checkbox[value="${requestId}"]`)?.closest('tr');
                 if (row) {
                     row.style.transition = 'all 0.3s';
@@ -1090,7 +1076,6 @@ async function deleteSingleRequest(requestId, event = null) {
                         updateSelectionCount();
                     }, 300);
                 } else {
-                    // Si la ligne n'est pas trouvée, recharger la page
                     setTimeout(() => location.reload(), 1500);
                 }
             } else {
@@ -1111,7 +1096,6 @@ async function deleteSelected() {
         return;
     }
     
-    // Afficher le modal de confirmation
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
     
     document.getElementById('deleteModalBody').innerHTML = `
@@ -1150,7 +1134,6 @@ async function deleteSelected() {
             if (response.ok) {
                 showSuccess(`${result.deleted_count} demande(s) supprimée(s) avec succès!`);
                 
-                // Retirer les lignes du tableau sans recharger la page
                 const rowsToDelete = [];
                 selectedRequests.forEach(requestId => {
                     const row = document.querySelector(`.request-checkbox[value="${requestId}"]`)?.closest('tr');
@@ -1159,14 +1142,12 @@ async function deleteSelected() {
                     }
                 });
                 
-                // Animer la suppression
                 rowsToDelete.forEach(row => {
                     row.style.transition = 'all 0.3s';
                     row.style.opacity = '0';
                     setTimeout(() => row.remove(), 300);
                 });
                 
-                // Mettre à jour les compteurs
                 setTimeout(() => {
                     updateCounts();
                     selectedRequests.clear();
@@ -1192,74 +1173,16 @@ function updateCounts() {
     const approvedRows = document.querySelectorAll('#requestsTable tbody tr[data-status="approved"]:not([style*="display: none"])');
     const rejectedRows = document.querySelectorAll('#requestsTable tbody tr[data-status="rejected"]:not([style*="display: none"])');
     
-    // Mettre à jour les compteurs dans l'interface
-    document.querySelectorAll('.stat-card h2')[0].textContent = pendingRows.length; // En attente
-    document.querySelectorAll('.stat-card h2')[1].textContent = approvedRows.length; // Approuvé
-    document.querySelectorAll('.stat-card h2')[2].textContent = rejectedRows.length; // Rejeté
-    document.querySelectorAll('.stat-card h2')[3].textContent = visibleRows.length; // Total
+    const statCards = document.querySelectorAll('.stat-card h2');
+    if (statCards.length >= 4) {
+        statCards[0].textContent = pendingRows.length;
+        statCards[1].textContent = approvedRows.length;
+        statCards[2].textContent = rejectedRows.length;
+        statCards[3].textContent = visibleRows.length;
+    }
     
-    // Mettre à jour le badge du titre
     document.getElementById('requestCount').textContent = visibleRows.length;
     document.getElementById('visibleCount').textContent = visibleRows.length;
-}
-
-// Fonction pour supprimer toutes les demandes (optionnel - à utiliser avec précaution)
-async function deleteAllRequests() {
-    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    
-    document.getElementById('deleteModalBody').innerHTML = `
-        <div class="alert alert-danger">
-            <i class="fas fa-radiation me-2 fa-2x"></i>
-            <h5 class="alert-heading">ATTENTION : Action critique</h5>
-            <p>Vous êtes sur le point de supprimer <strong>TOUTES</strong> les demandes.</p>
-            <hr>
-            <p class="mb-0">
-                <strong>Cette action est irréversible.</strong><br>
-                Tous les fichiers uploadés seront également supprimés.
-            </p>
-        </div>
-        <div class="mt-3">
-            <p>Pour confirmer, tapez "SUPPRIMER TOUT" dans le champ ci-dessous :</p>
-            <input type="text" class="form-control" id="confirmDeleteInput" 
-                   placeholder="Tapez SUPPRIMER TOUT pour confirmer">
-        </div>
-    `;
-    
-    document.getElementById('confirmDeleteBtn').onclick = async () => {
-        const input = document.getElementById('confirmDeleteInput');
-        if (input.value !== 'SUPPRIMER TOUT') {
-            showError('Vous devez taper "SUPPRIMER TOUT" pour confirmer');
-            return;
-        }
-        
-        modal.hide();
-        showLoading('Suppression de toutes les demandes...');
-        
-        try {
-            const response = await fetch('/admin/delete_all_requests', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    confirm: true
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (response.ok) {
-                showSuccess(result.message);
-                setTimeout(() => location.reload(), 1500);
-            } else {
-                showError('Erreur: ' + (result.error || 'Échec de la suppression'));
-            }
-        } catch (error) {
-            showError('Erreur: ' + error);
-        }
-    };
-    
-    modal.show();
 }
 </script>
 {% endblock %}
