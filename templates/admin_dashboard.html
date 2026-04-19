@@ -16,11 +16,6 @@
         --light-gray: #F3F4F6;
     }
     
-    * {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    }
-    
-    /* Cartes statistiques */
     .stat-card {
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border: none;
@@ -59,7 +54,6 @@
         transform: scale(1.1) rotate(5deg);
     }
     
-    /* Badges de statut */
     .status-badge {
         padding: 6px 14px;
         border-radius: 30px;
@@ -75,7 +69,6 @@
     .status-approved { background: #D1FAE5; color: #059669; }
     .status-rejected { background: #FEE2E2; color: #DC2626; }
     
-    /* Onglets améliorés */
     .nav-tabs-custom {
         border-bottom: 2px solid #E5E7EB;
         gap: 0.5rem;
@@ -112,15 +105,6 @@
         border-radius: 3px;
     }
     
-    .nav-tabs-custom .badge-count {
-        margin-left: 8px;
-        padding: 2px 8px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-    
-    /* Tableaux */
     .data-table {
         width: 100%;
         border-collapse: separate;
@@ -144,16 +128,10 @@
         font-size: 13px;
     }
     
-    .data-table tbody tr {
-        transition: all 0.2s ease;
-    }
-    
     .data-table tbody tr:hover {
         background: #F9FAFB;
-        transform: scale(1.01);
     }
     
-    /* Cartes de filtres */
     .filter-card {
         background: white;
         border-radius: 16px;
@@ -162,7 +140,6 @@
         border: 1px solid #E5E7EB;
     }
     
-    /* Avatar */
     .student-avatar {
         width: 38px;
         height: 38px;
@@ -176,7 +153,6 @@
         font-size: 14px;
     }
     
-    /* Boutons d'action */
     .action-btn {
         padding: 6px 10px;
         border-radius: 8px;
@@ -184,11 +160,6 @@
         transition: all 0.2s ease;
     }
     
-    .action-btn:hover {
-        transform: translateY(-2px);
-    }
-    
-    /* Badge catégorie */
     .category-badge {
         padding: 4px 10px;
         border-radius: 20px;
@@ -202,23 +173,11 @@
     .category-etudiant { background: #E0F2FE; color: #0284C7; }
     .category-eleve { background: #FEF3C7; color: #D97706; }
     
-    /* Animations */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .fade-in {
-        animation: fadeIn 0.4s ease-out;
-    }
-    
-    /* Responsive */
     @media (max-width: 768px) {
         .data-table thead { display: none; }
         .data-table tbody tr { display: block; margin-bottom: 16px; border: 1px solid #E5E7EB; border-radius: 12px; }
         .data-table tbody td { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid #F3F4F6; }
         .data-table tbody td::before { content: attr(data-label); font-weight: 600; font-size: 12px; color: #6B7280; }
-        .action-buttons { justify-content: flex-end; }
     }
 </style>
 {% endblock %}
@@ -360,98 +319,36 @@
         </div>
     </div>
 
-    <!-- Actions rapides -->
-    <div class="filter-card mb-4">
-        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
-            <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-sm btn-outline-success" onclick="selectAllVisible()">
-                    <i class="fas fa-check-double me-1"></i>Tout sélectionner
-                </button>
-                <button class="btn btn-sm btn-outline-warning" onclick="bulkUpdateStatus('pending')">
-                    <i class="fas fa-clock me-1"></i>Mettre en attente
-                </button>
-                <button class="btn btn-sm btn-outline-success" onclick="bulkUpdateStatus('approved')">
-                    <i class="fas fa-check me-1"></i>Approuver
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="bulkUpdateStatus('rejected')">
-                    <i class="fas fa-times me-1"></i>Rejeter
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="bulkDelete()">
-                    <i class="fas fa-trash me-1"></i>Supprimer
-                </button>
-                <button class="btn btn-sm btn-outline-primary" onclick="exportSelectedToCSV()">
-                    <i class="fas fa-file-excel me-1"></i>Exporter CSV
-                </button>
-            </div>
-            <div class="text-muted small">
-                <i class="fas fa-info-circle me-1"></i>
-                <span id="selectedCount">0</span> sélectionné(s)
-            </div>
-        </div>
-    </div>
-
-    <!-- Filtres -->
-    <div class="filter-card mb-4">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label small fw-semibold">Filtrer par statut</label>
-                <select class="form-select form-select-sm" id="statusFilter">
-                    <option value="all">Tous les statuts</option>
-                    <option value="pending">En attente</option>
-                    <option value="approved">Approuvé</option>
-                    <option value="rejected">Rejeté</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small fw-semibold">Filtrer par type</label>
-                <select class="form-select form-select-sm" id="typeFilter">
-                    <option value="all">Tous les types</option>
-                    <option value="logement">Logement</option>
-                    <option value="bourse">Bourse</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label small fw-semibold">Rechercher</label>
-                <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Nom, prénom, email...">
-            </div>
-            <div class="col-md-2">
-                <button class="btn btn-secondary btn-sm w-100" onclick="resetFilters()">
-                    <i class="fas fa-undo-alt me-1"></i>Réinitialiser
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Onglets de navigation -->
     <ul class="nav nav-tabs-custom mb-3" id="requestTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#all" type="button">
                 <i class="fas fa-list me-2"></i>Toutes
-                <span class="badge-count bg-secondary bg-opacity-10 text-secondary">{{ requests|length }}</span>
+                <span class="badge bg-secondary bg-opacity-10 text-secondary ms-1">{{ requests|length }}</span>
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#logement" type="button" role="tab">
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#logement" type="button">
                 <i class="fas fa-home me-2"></i>Logement
-                <span class="badge-count bg-primary bg-opacity-10 text-primary">{{ logement_count|default(0) }}</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary ms-1">{{ logement_count|default(0) }}</span>
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#bourse" type="button" role="tab">
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#bourse" type="button">
                 <i class="fas fa-graduation-cap me-2"></i>Bourse
-                <span class="badge-count bg-success bg-opacity-10 text-success">{{ bourse_count|default(0) }}</span>
+                <span class="badge bg-success bg-opacity-10 text-success ms-1">{{ bourse_count|default(0) }}</span>
             </button>
         </li>
     </ul>
 
     <!-- Contenu des onglets -->
     <div class="tab-content">
-        <!-- Onglet : Toutes les demandes -->
-        <div class="tab-pane fade show active" id="all" role="tabpanel">
+        <!-- Onglet Toutes les demandes -->
+        <div class="tab-pane fade show active" id="all">
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="data-table" id="allTable">
+                        <table class="data-table">
                             <thead>
                                 <tr>
                                     <th width="40"><input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)"></th>
@@ -468,7 +365,7 @@
                             </thead>
                             <tbody>
                                 {% for req in requests %}
-                                <tr data-id="{{ req.id }}" data-status="{{ req.status }}" data-type="{{ req.request_type }}" data-categorie="{{ req.categorie|default('') }}">
+                                <tr data-id="{{ req.id }}" data-status="{{ req.status }}" data-type="{{ req.request_type }}">
                                     <td data-label=""><input type="checkbox" class="request-checkbox" value="{{ req.id }}" data-name="{{ req.prenom }} {{ req.nom }}" data-email="{{ req.email }}"></td>
                                     <td data-label="ID"><span class="fw-semibold">#{{ req.id }}</span></td>
                                     <td data-label="Type">
@@ -496,19 +393,19 @@
                                             <div class="student-avatar">{{ req.prenom[0]|upper }}{{ req.nom[0]|upper }}</div>
                                             <div>
                                                 <div class="fw-semibold">{{ req.nom }} {{ req.prenom }}</div>
-                                                <div class="small text-muted">{{ req.adresse[:35] }}{% if req.adresse|length > 35 %}...{% endif %}</div>
+                                                <div class="small text-muted">{{ req.adresse|truncate(35) }}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td data-label="Contact">
                                         <div><i class="fas fa-phone fa-xs text-muted me-1"></i> {{ req.telephone }}</div>
-                                        <div class="small text-muted"><i class="fas fa-envelope fa-xs me-1"></i> {{ req.email[:25] }}{% if req.email|length > 25 %}...{% endif %}</div>
+                                        <div class="small text-muted"><i class="fas fa-envelope fa-xs me-1"></i> {{ req.email|truncate(25) }}</div>
                                     </td>
                                     <td data-label="Localisation">
                                         {% if req.request_type == 'logement' %}
                                         <i class="fas fa-map-marker-alt fa-xs text-primary me-1"></i> {{ req.region_universitaire|default('-') }}
                                         {% else %}
-                                        <i class="fas fa-school fa-xs text-success me-1"></i> {{ req.etablissement|default('-')[:35] }}{% if req.etablissement|length > 35 %}...{% endif %}
+                                        <i class="fas fa-school fa-xs text-success me-1"></i> {{ req.etablissement|default('-')|truncate(35) }}
                                         {% endif %}
                                     </td>
                                     <td data-label="Statut">
@@ -544,8 +441,8 @@
             </div>
         </div>
 
-        <!-- Onglet : Logement -->
-        <div class="tab-pane fade" id="logement" role="tabpanel">
+        <!-- Onglet Logement -->
+        <div class="tab-pane fade" id="logement">
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -557,8 +454,8 @@
                                 {% for req in requests if req.request_type == 'logement' %}
                                 <tr>
                                     <td data-label="ID">#{{ req.id }}</td>
-                                    <td data-label="Demandeur"><div class="fw-semibold">{{ req.nom }} {{ req.prenom }}</div><div class="small text-muted">{{ req.adresse[:30] }}</div></td>
-                                    <td data-label="Contact">{{ req.telephone }}<br>{{ req.email[:25] }}</td>
+                                    <td data-label="Demandeur"><div class="fw-semibold">{{ req.nom }} {{ req.prenom }}</div><div class="small text-muted">{{ req.adresse|truncate(30) }}</div></td>
+                                    <td data-label="Contact">{{ req.telephone }}<br>{{ req.email|truncate(25) }}</td>
                                     <td data-label="Région">{{ req.region_universitaire|default('-') }}</td>
                                     <td data-label="Statut">{% if req.status == 'pending' %}<span class="status-badge status-pending">En attente</span>{% elif req.status == 'approved' %}<span class="status-badge status-approved">Approuvé</span>{% else %}<span class="status-badge status-rejected">Rejeté</span>{% endif %}</td>
                                     <td data-label="Date">{{ req.date_submitted.strftime('%d/%m/%Y') }}</td>
@@ -574,8 +471,8 @@
             </div>
         </div>
 
-        <!-- Onglet : Bourse -->
-        <div class="tab-pane fade" id="bourse" role="tabpanel">
+        <!-- Onglet Bourse -->
+        <div class="tab-pane fade" id="bourse">
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -588,9 +485,9 @@
                                 <tr>
                                     <td data-label="ID">#{{ req.id }}</td>
                                     <td data-label="Catégorie">{% if req.categorie == 'etudiant' %}<span class="category-badge category-etudiant"><i class="fas fa-university"></i> Étudiant</span>{% else %}<span class="category-badge category-eleve"><i class="fas fa-graduation-cap"></i> Élève</span>{% endif %}</td>
-                                    <td data-label="Demandeur"><div class="fw-semibold">{{ req.nom }} {{ req.prenom }}</div><div class="small text-muted">{{ req.adresse[:30] }}</div></td>
-                                    <td data-label="Établissement">{{ req.etablissement|default('-')[:35] }}</td>
-                                    <td data-label="Contact">{{ req.telephone }}<br>{{ req.email[:25] }}</td>
+                                    <td data-label="Demandeur"><div class="fw-semibold">{{ req.nom }} {{ req.prenom }}</div><div class="small text-muted">{{ req.adresse|truncate(30) }}</div></td>
+                                    <td data-label="Établissement">{{ req.etablissement|default('-')|truncate(35) }}</td>
+                                    <td data-label="Contact">{{ req.telephone }}<br>{{ req.email|truncate(25) }}</td>
                                     <td data-label="Statut">{% if req.status == 'pending' %}<span class="status-badge status-pending">En attente</span>{% elif req.status == 'approved' %}<span class="status-badge status-approved">Approuvé</span>{% else %}<span class="status-badge status-rejected">Rejeté</span>{% endif %}</td>
                                     <td data-label="Date">{{ req.date_submitted.strftime('%d/%m/%Y') }}</td>
                                     <td data-label="Actions"><div class="btn-group btn-group-sm"><a href="{{ url_for('view_request', request_id=req.id) }}" class="btn btn-outline-primary"><i class="fas fa-eye"></i></a><button class="btn btn-outline-success" onclick="updateStatus({{ req.id }}, 'approved')"><i class="fas fa-check"></i></button><button class="btn btn-outline-danger" onclick="updateStatus({{ req.id }}, 'rejected')"><i class="fas fa-times"></i></button></div></td>
@@ -634,107 +531,27 @@
         </div>
     </div>
 </div>
-
-<!-- Modal Confirmation -->
-<div class="modal fade" id="confirmModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4">
-            <div class="modal-header border-0">
-                <h5 class="modal-title" id="confirmTitle">Confirmation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="confirmMessage"></div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirmer</button>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 let selectedRequests = new Set();
 let selectedStudents = [];
-let currentFilter = { status: 'all', type: 'all', search: '' };
-
-// Initialisation
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('statusFilter').addEventListener('change', applyFilters);
-    document.getElementById('typeFilter').addEventListener('change', applyFilters);
-    document.getElementById('searchInput').addEventListener('keyup', applyFilters);
-    updateSelectionDisplay();
-});
-
-function applyFilters() {
-    const status = document.getElementById('statusFilter').value;
-    const type = document.getElementById('typeFilter').value;
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    
-    const rows = document.querySelectorAll('#allTable tbody tr');
-    let visibleCount = 0;
-    
-    rows.forEach(row => {
-        const rowStatus = row.dataset.status;
-        const rowType = row.dataset.type;
-        const rowText = row.innerText.toLowerCase();
-        
-        let show = true;
-        if (status !== 'all' && rowStatus !== status) show = false;
-        if (type !== 'all' && rowType !== type) show = false;
-        if (search && !rowText.includes(search)) show = false;
-        
-        row.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
-    });
-    
-    document.getElementById('selectedCount').textContent = selectedRequests.size;
-}
-
-function resetFilters() {
-    document.getElementById('statusFilter').value = 'all';
-    document.getElementById('typeFilter').value = 'all';
-    document.getElementById('searchInput').value = '';
-    applyFilters();
-}
 
 function toggleSelectAll(checkbox) {
-    const visibleRows = document.querySelectorAll('#allTable tbody tr:not([style*="display: none"])');
-    visibleRows.forEach(row => {
-        const cb = row.querySelector('.request-checkbox');
-        if (cb) {
-            cb.checked = checkbox.checked;
-            const id = parseInt(cb.value);
-            if (checkbox.checked) {
-                selectedRequests.add(id);
-                selectedStudents.push({id: id, nom: cb.dataset.name, email: cb.dataset.email});
-            } else {
-                selectedRequests.delete(id);
-                selectedStudents = selectedStudents.filter(s => s.id !== id);
-            }
-        }
-    });
-    updateSelectionDisplay();
-}
-
-function selectAllVisible() {
-    const checkboxes = document.querySelectorAll('#allTable tbody tr:not([style*="display: none"]) .request-checkbox');
+    const checkboxes = document.querySelectorAll('#all .request-checkbox');
     checkboxes.forEach(cb => {
-        cb.checked = true;
+        cb.checked = checkbox.checked;
         const id = parseInt(cb.value);
-        selectedRequests.add(id);
-        if (!selectedStudents.some(s => s.id === id)) {
+        if (checkbox.checked) {
+            selectedRequests.add(id);
             selectedStudents.push({id: id, nom: cb.dataset.name, email: cb.dataset.email});
+        } else {
+            selectedRequests.delete(id);
+            selectedStudents = selectedStudents.filter(s => s.id !== id);
         }
     });
-    updateSelectionDisplay();
-}
-
-function updateSelectionDisplay() {
-    document.getElementById('selectedCount').textContent = selectedRequests.size;
-    const selectAll = document.getElementById('selectAllCheckbox');
-    if (selectAll) selectAll.checked = false;
+    document.getElementById('selectedCountDisplay').innerText = selectedRequests.size;
 }
 
 function selectForEmail(id, name, email) {
@@ -744,7 +561,6 @@ function selectForEmail(id, name, email) {
         const cb = document.querySelector(`.request-checkbox[value="${id}"]`);
         if (cb) cb.checked = true;
     }
-    updateSelectionDisplay();
     document.getElementById('emailRecipientInfo').innerHTML = `<i class="fas fa-users me-2"></i>Envoi à ${selectedStudents.length} destinataire(s) sélectionné(s)`;
     new bootstrap.Modal(document.getElementById('emailModal')).show();
 }
@@ -802,31 +618,6 @@ async function updateStatus(id, status) {
     hideLoading();
 }
 
-async function bulkUpdateStatus(status) {
-    if (selectedRequests.size === 0) {
-        alert('Veuillez sélectionner au moins une demande');
-        return;
-    }
-    const notes = prompt('Notes pour toutes les demandes sélectionnées :');
-    if (notes === null) return;
-    
-    showLoading();
-    let success = 0, error = 0;
-    for (const id of selectedRequests) {
-        try {
-            await fetch(`/admin/update_status/${id}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({status: status, notes: notes || ''})
-            });
-            success++;
-        } catch(e) { error++; }
-    }
-    hideLoading();
-    alert(`${success} mise(s) à jour réussie(s), ${error} erreur(s)`);
-    location.reload();
-}
-
 async function deleteSingleRequest(id) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette demande ? Action irréversible.')) {
         showLoading();
@@ -836,42 +627,6 @@ async function deleteSingleRequest(id) {
         else alert('Erreur lors de la suppression');
         hideLoading();
     }
-}
-
-async function bulkDelete() {
-    if (selectedRequests.size === 0) {
-        alert('Veuillez sélectionner au moins une demande');
-        return;
-    }
-    if (confirm(`Supprimer définitivement ${selectedRequests.size} demande(s) ? Cette action est irréversible.`)) {
-        showLoading();
-        const response = await fetch('/admin/delete_requests', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({request_ids: Array.from(selectedRequests)})
-        });
-        const result = await response.json();
-        if (response.ok) { alert(result.message); location.reload(); }
-        else alert('Erreur lors de la suppression');
-        hideLoading();
-    }
-}
-
-function exportSelectedToCSV() {
-    if (selectedStudents.length === 0) {
-        alert('Aucune demande sélectionnée');
-        return;
-    }
-    let csv = "ID,Nom,Prénom,Email,Statut\n";
-    selectedStudents.forEach(s => {
-        csv += `${s.id},${s.nom.split(' ')[1] || ''},${s.nom.split(' ')[0] || ''},${s.email},\n`;
-    });
-    const blob = new Blob([csv], {type: 'text/csv'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `export_demandes_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(a.href);
 }
 
 function showLoading() {
