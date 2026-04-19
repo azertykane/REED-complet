@@ -1009,8 +1009,8 @@ def formulaire_bourse():
             adresse = request.form.get('adresse', '').strip()
             telephone = request.form.get('telephone', '').strip()
             email = request.form.get('email', '').strip().lower()
-            etablissement = request.form.get('etablissement', '').strip()  # NOUVEAU
-            categorie = request.form.get('categorie', 'etudiant').strip()  # NOUVEAU
+            etablissement = request.form.get('etablissement', '').strip()
+            categorie = request.form.get('categorie', 'etudiant').strip()
             
             if not all([nom, prenom, adresse, telephone, email, etablissement]):
                 flash('Tous les champs sont obligatoires', 'error')
@@ -1030,8 +1030,8 @@ def formulaire_bourse():
                 adresse=adresse,
                 telephone=telephone,
                 email=email,
-                etablissement=etablissement,  # NOUVEAU
-                categorie=categorie,  # NOUVEAU
+                etablissement=etablissement,
+                categorie=categorie,
                 request_type='bourse',
                 status='pending'
             )
@@ -1079,8 +1079,9 @@ def formulaire_bourse():
             
             db.session.commit()
             
+            # Envoi de l'email de confirmation
             try:
-                send_confirmation_email_bourse(email, nom, prenom, new_request.id, categorie)
+                send_confirmation_email_bourse(email, nom, prenom, new_request.id)
             except Exception as email_error:
                 print(f"Erreur programmation email: {email_error}")
             
@@ -1090,6 +1091,8 @@ def formulaire_bourse():
         except Exception as e:
             db.session.rollback()
             print(f"Erreur lors de la soumission: {str(e)}")
+            import traceback
+            traceback.print_exc()
             flash('Une erreur est survenue. Veuillez réessayer.', 'error')
             return redirect(url_for('formulaire_bourse'))
     
