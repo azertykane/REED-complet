@@ -1086,7 +1086,7 @@ def formulaire_bourse():
                 print(f"Erreur programmation email: {email_error}")
             
             flash('Votre demande de bourse a été soumise avec succès!', 'success')
-            return redirect(url_for('information'))
+            return redirect(url_for('index'))
             
         except Exception as e:
             db.session.rollback()
