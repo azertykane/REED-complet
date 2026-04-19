@@ -56,12 +56,6 @@
     .document-group.hide {
         display: none;
     }
-    .file-name {
-        font-size: 11px;
-        color: #059669;
-        margin-top: 5px;
-        word-break: break-all;
-    }
     .required-star {
         color: #dc2626;
     }
@@ -88,10 +82,10 @@
                     <!-- SWITCHER ÉLÈVE / ÉTUDIANT -->
                     <div class="text-center">
                         <div class="category-switch">
-                            <button type="button" class="category-btn active" id="btnEtudiant" data-category="etudiant">
+                            <button type="button" class="category-btn active" id="btnEtudiant" onclick="setCategory('etudiant')">
                                 <i class="fas fa-university me-2"></i>Étudiant
                             </button>
-                            <button type="button" class="category-btn" id="btnEleve" data-category="eleve">
+                            <button type="button" class="category-btn" id="btnEleve" onclick="setCategory('eleve')">
                                 <i class="fas fa-graduation-cap me-2"></i>Élève
                             </button>
                         </div>
@@ -106,28 +100,28 @@
                         
                         <div class="row mb-3">
                             <div class="col-12 col-md-6 mb-3">
-                                <label for="nom" class="form-label fw-semibold">Nom <span class="required-star">*</span></label>
-                                <input type="text" class="form-control" id="nom" name="nom" required>
+                                <label class="form-label fw-semibold">Nom <span class="required-star">*</span></label>
+                                <input type="text" class="form-control" name="nom" required>
                             </div>
                             <div class="col-12 col-md-6 mb-3">
-                                <label for="prenom" class="form-label fw-semibold">Prénom <span class="required-star">*</span></label>
-                                <input type="text" class="form-control" id="prenom" name="prenom" required>
+                                <label class="form-label fw-semibold">Prénom <span class="required-star">*</span></label>
+                                <input type="text" class="form-control" name="prenom" required>
                             </div>
                             <div class="col-12 mb-3">
-                                <label for="adresse" class="form-label fw-semibold">Adresse complète <span class="required-star">*</span></label>
-                                <textarea class="form-control" id="adresse" name="adresse" rows="2" required></textarea>
+                                <label class="form-label fw-semibold">Adresse complète <span class="required-star">*</span></label>
+                                <textarea class="form-control" name="adresse" rows="2" required></textarea>
                             </div>
                             <div class="col-12 col-md-6 mb-3">
-                                <label for="telephone" class="form-label fw-semibold">Numéro de téléphone <span class="required-star">*</span></label>
-                                <input type="tel" class="form-control" id="telephone" name="telephone" required>
+                                <label class="form-label fw-semibold">Numéro de téléphone <span class="required-star">*</span></label>
+                                <input type="tel" class="form-control" name="telephone" required>
                             </div>
                             <div class="col-12 col-md-6 mb-3">
-                                <label for="email" class="form-label fw-semibold">Email <span class="required-star">*</span></label>
-                                <input type="email" class="form-control" id="email" name="email" required>
+                                <label class="form-label fw-semibold">Email <span class="required-star">*</span></label>
+                                <input type="email" class="form-control" name="email" required>
                             </div>
                             <div class="col-md-12 mb-3">
-                                <label for="etablissement" class="form-label fw-semibold">Établissement <span class="required-star">*</span></label>
-                                <input type="text" class="form-control" id="etablissement" name="etablissement" required 
+                                <label class="form-label fw-semibold">Établissement <span class="required-star">*</span></label>
+                                <input type="text" class="form-control" name="etablissement" required 
                                        placeholder="Nom de votre école, lycée, université...">
                                 <small class="form-text text-muted">Indiquez le nom de votre établissement</small>
                             </div>
@@ -140,7 +134,7 @@
                         </h3>
                         <p class="text-muted mb-3">Tous les documents doivent être au format PDF, JPG ou PNG (max 16MB)</p>
 
-                        <!-- GROUPE ÉTUDIANT (visible par défaut) -->
+                        <!-- GROUPE ÉTUDIANT -->
                         <div id="documentsEtudiant" class="document-group">
                             <div class="alert alert-info mb-3">
                                 <i class="fas fa-info-circle me-2"></i>
@@ -149,63 +143,43 @@
                             <div class="row">
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
-                                        <label class="form-label fw-semibold">
-                                            <i class="fas fa-pen-fancy me-1"></i>Demande manuscrite <span class="required-star">*</span>
-                                        </label>
-                                        <input type="file" class="form-control form-control-sm" 
-                                               name="demande_manuscrite" accept=".pdf,.jpg,.jpeg,.png">
-                                        <small class="form-text text-muted d-block mt-1">Lettre manuscrite adressée au Maire</small>
-                                        <div class="file-name" id="file-name-demande_manuscrite"></div>
+                                        <label class="form-label fw-semibold">Demande manuscrite <span class="required-star">*</span></label>
+                                        <input type="file" class="form-control form-control-sm" name="demande_manuscrite" accept=".pdf,.jpg,.jpeg,.png">
+                                        <small class="form-text text-muted">Lettre manuscrite adressée au Maire</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
-                                        <label class="form-label fw-semibold">
-                                            <i class="fas fa-id-card me-1"></i>Carte étudiant / Certificat d'inscription <span class="required-star">*</span>
-                                        </label>
-                                        <input type="file" class="form-control form-control-sm" 
-                                               name="certificat_inscription" accept=".pdf,.jpg,.jpeg,.png">
-                                        <small class="form-text text-muted d-block mt-1">Carte étudiant ou certificat d'inscription validé</small>
-                                        <div class="file-name" id="file-name-certificat_inscription"></div>
+                                        <label class="form-label fw-semibold">Carte étudiant / Certificat d'inscription <span class="required-star">*</span></label>
+                                        <input type="file" class="form-control form-control-sm" name="certificat_inscription" accept=".pdf,.jpg,.jpeg,.png">
+                                        <small class="form-text text-muted">Carte étudiant ou certificat d'inscription validé</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
-                                        <label class="form-label fw-semibold">
-                                            <i class="fas fa-id-card me-1"></i>Photocopie carte d'identité <span class="required-star">*</span>
-                                        </label>
-                                        <input type="file" class="form-control form-control-sm" 
-                                               name="copie_cni" accept=".pdf,.jpg,.jpeg,.png">
-                                        <small class="form-text text-muted d-block mt-1">CNI recto-verso</small>
-                                        <div class="file-name" id="file-name-copie_cni"></div>
+                                        <label class="form-label fw-semibold">Photocopie carte d'identité <span class="required-star">*</span></label>
+                                        <input type="file" class="form-control form-control-sm" name="copie_cni" accept=".pdf,.jpg,.jpeg,.png">
+                                        <small class="form-text text-muted">CNI recto-verso</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-6 mb-3">
                                     <div class="document-upload">
-                                        <label class="form-label fw-semibold">
-                                            <i class="fas fa-home me-1"></i>Certificat de résidence <span class="required-star">*</span>
-                                        </label>
-                                        <input type="file" class="form-control form-control-sm" 
-                                               name="certificat_residence" accept=".pdf,.jpg,.jpeg,.png">
-                                        <small class="form-text text-muted d-block mt-1">Justificatif de domicile</small>
-                                        <div class="file-name" id="file-name-certificat_residence"></div>
+                                        <label class="form-label fw-semibold">Certificat de résidence <span class="required-star">*</span></label>
+                                        <input type="file" class="form-control form-control-sm" name="certificat_residence" accept=".pdf,.jpg,.jpeg,.png">
+                                        <small class="form-text text-muted">Justificatif de domicile</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-6 mb-3">
                                     <div class="document-upload">
-                                        <label class="form-label fw-semibold">
-                                            <i class="fas fa-address-card me-1"></i>Carte membre REED <span class="required-star">*</span>
-                                        </label>
-                                        <input type="file" class="form-control form-control-sm" 
-                                               name="carte_membre_reed" accept=".pdf,.jpg,.jpeg,.png">
-                                        <small class="form-text text-muted d-block mt-1">Carte de membre REED valide</small>
-                                        <div class="file-name" id="file-name-carte_membre_reed"></div>
+                                        <label class="form-label fw-semibold">Carte membre REED <span class="required-star">*</span></label>
+                                        <input type="file" class="form-control form-control-sm" name="carte_membre_reed" accept=".pdf,.jpg,.jpeg,.png">
+                                        <small class="form-text text-muted">Carte de membre REED valide</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- GROUPE ÉLÈVE (caché par défaut) -->
+                        <!-- GROUPE ÉLÈVE -->
                         <div id="documentsEleve" class="document-group hide">
                             <div class="alert alert-success mb-3">
                                 <i class="fas fa-info-circle me-2"></i>
@@ -214,57 +188,37 @@
                             <div class="row">
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
-                                        <label class="form-label fw-semibold">
-                                            <i class="fas fa-pen-fancy me-1"></i>Demande manuscrite <span class="required-star">*</span>
-                                        </label>
-                                        <input type="file" class="form-control form-control-sm" 
-                                               name="demande_manuscrite" accept=".pdf,.jpg,.jpeg,.png">
-                                        <small class="form-text text-muted d-block mt-1">Lettre manuscrite adressée au Maire</small>
-                                        <div class="file-name" id="file-name-demande_manuscrite_eleve"></div>
+                                        <label class="form-label fw-semibold">Demande manuscrite <span class="required-star">*</span></label>
+                                        <input type="file" class="form-control form-control-sm" name="demande_manuscrite" accept=".pdf,.jpg,.jpeg,.png">
+                                        <small class="form-text text-muted">Lettre manuscrite adressée au Maire</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
-                                        <label class="form-label fw-semibold">
-                                            <i class="fas fa-graduation-cap me-1"></i>Certificat de scolarité <span class="required-star">*</span>
-                                        </label>
-                                        <input type="file" class="form-control form-control-sm" 
-                                               name="certificat_scolarite" accept=".pdf,.jpg,.jpeg,.png">
-                                        <small class="form-text text-muted d-block mt-1">Certificat de scolarité de l'année en cours</small>
-                                        <div class="file-name" id="file-name-certificat_scolarite"></div>
+                                        <label class="form-label fw-semibold">Certificat de scolarité <span class="required-star">*</span></label>
+                                        <input type="file" class="form-control form-control-sm" name="certificat_scolarite" accept=".pdf,.jpg,.jpeg,.png">
+                                        <small class="form-text text-muted">Certificat de scolarité de l'année en cours</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
-                                        <label class="form-label fw-semibold">
-                                            <i class="fas fa-file-alt me-1"></i>Bulletin 2ème Semestre <span class="required-star">*</span>
-                                        </label>
-                                        <input type="file" class="form-control form-control-sm" 
-                                               name="bulletin_s2" accept=".pdf,.jpg,.jpeg,.png">
-                                        <small class="form-text text-muted d-block mt-1">Bulletin du 2ème semestre</small>
-                                        <div class="file-name" id="file-name-bulletin_s2"></div>
+                                        <label class="form-label fw-semibold">Bulletin 2ème Semestre <span class="required-star">*</span></label>
+                                        <input type="file" class="form-control form-control-sm" name="bulletin_s2" accept=".pdf,.jpg,.jpeg,.png">
+                                        <small class="form-text text-muted">Bulletin du 2ème semestre</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-6 mb-3">
                                     <div class="document-upload">
-                                        <label class="form-label fw-semibold">
-                                            <i class="fas fa-home me-1"></i>Certificat de résidence <span class="required-star">*</span>
-                                        </label>
-                                        <input type="file" class="form-control form-control-sm" 
-                                               name="certificat_residence" accept=".pdf,.jpg,.jpeg,.png">
-                                        <small class="form-text text-muted d-block mt-1">Justificatif de domicile</small>
-                                        <div class="file-name" id="file-name-certificat_residence_eleve"></div>
+                                        <label class="form-label fw-semibold">Certificat de résidence <span class="required-star">*</span></label>
+                                        <input type="file" class="form-control form-control-sm" name="certificat_residence" accept=".pdf,.jpg,.jpeg,.png">
+                                        <small class="form-text text-muted">Justificatif de domicile</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-6 mb-3">
                                     <div class="document-upload">
-                                        <label class="form-label fw-semibold">
-                                            <i class="fas fa-address-card me-1"></i>Carte membre REED <span class="required-star">*</span>
-                                        </label>
-                                        <input type="file" class="form-control form-control-sm" 
-                                               name="carte_membre_reed" accept=".pdf,.jpg,.jpeg,.png">
-                                        <small class="form-text text-muted d-block mt-1">Carte de membre REED valide</small>
-                                        <div class="file-name" id="file-name-carte_membre_reed_eleve"></div>
+                                        <label class="form-label fw-semibold">Carte membre REED <span class="required-star">*</span></label>
+                                        <input type="file" class="form-control form-control-sm" name="carte_membre_reed" accept=".pdf,.jpg,.jpeg,.png">
+                                        <small class="form-text text-muted">Carte de membre REED valide</small>
                                     </div>
                                 </div>
                             </div>
@@ -287,10 +241,10 @@
                         <p id="progress-text" class="text-center d-none small mt-2 mb-0">Traitement en cours...</p>
 
                         <div class="d-flex flex-column flex-md-row gap-2 justify-content-end mt-4">
-                            <button type="reset" class="btn btn-outline-secondary order-2 order-md-1">
+                            <button type="reset" class="btn btn-outline-secondary">
                                 <i class="fas fa-undo me-1"></i>Effacer
                             </button>
-                            <button type="submit" class="btn btn-primary order-1 order-md-2" id="submit-btn">
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
                                 <i class="fas fa-paper-plane me-1"></i>Soumettre la demande
                             </button>
                         </div>
@@ -304,6 +258,28 @@
 
 {% block extra_js %}
 <script>
+function setCategory(category) {
+    const btnEtudiant = document.getElementById('btnEtudiant');
+    const btnEleve = document.getElementById('btnEleve');
+    const docsEtudiant = document.getElementById('documentsEtudiant');
+    const docsEleve = document.getElementById('documentsEleve');
+    const categorieInput = document.getElementById('categorie');
+    
+    categorieInput.value = category;
+    
+    if (category === 'etudiant') {
+        btnEtudiant.classList.add('active');
+        btnEleve.classList.remove('active');
+        docsEtudiant.classList.remove('hide');
+        docsEleve.classList.add('hide');
+    } else {
+        btnEtudiant.classList.remove('active');
+        btnEleve.classList.add('active');
+        docsEtudiant.classList.add('hide');
+        docsEleve.classList.remove('hide');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('demandeBourseForm');
     const submitBtn = document.getElementById('submit-btn');
@@ -311,65 +287,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
     
-    // Gestion du switcher Élève/Étudiant
-    const btnEtudiant = document.getElementById('btnEtudiant');
-    const btnEleve = document.getElementById('btnEleve');
-    const docsEtudiant = document.getElementById('documentsEtudiant');
-    const docsEleve = document.getElementById('documentsEleve');
-    const categorieInput = document.getElementById('categorie');
-    
-    function updateRequiredFields() {
-        // Désactiver tous les champs requis
-        const allFileInputs = form.querySelectorAll('input[type="file"]');
-        allFileInputs.forEach(input => input.required = false);
-        
-        // Activer uniquement ceux du groupe visible
-        if (categorieInput.value === 'etudiant') {
-            const activeInputs = docsEtudiant.querySelectorAll('input[type="file"]');
-            activeInputs.forEach(input => input.required = true);
-        } else {
-            const activeInputs = docsEleve.querySelectorAll('input[type="file"]');
-            activeInputs.forEach(input => input.required = true);
-        }
-    }
-    
-    function setActiveCategory(category) {
-        categorieInput.value = category;
-        
-        if (category === 'etudiant') {
-            btnEtudiant.classList.add('active');
-            btnEleve.classList.remove('active');
-            docsEtudiant.classList.remove('hide');
-            docsEleve.classList.add('hide');
-        } else {
-            btnEtudiant.classList.remove('active');
-            btnEleve.classList.add('active');
-            docsEtudiant.classList.add('hide');
-            docsEleve.classList.remove('hide');
-        }
-        updateRequiredFields();
-    }
-    
-    btnEtudiant.addEventListener('click', () => setActiveCategory('etudiant'));
-    btnEleve.addEventListener('click', () => setActiveCategory('eleve'));
-    
-    // Afficher le nom du fichier sélectionné
-    const fileInputs = form.querySelectorAll('input[type="file"]');
-    fileInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            const fileNameSpan = document.getElementById(`file-name-${this.name}`);
-            if (fileNameSpan && this.files.length > 0) {
-                fileNameSpan.textContent = this.files[0].name;
-            }
-        });
-    });
-    
     // Initialisation
-    setActiveCategory('etudiant');
+    setCategory('etudiant');
     
-    // Validation avant soumission
     form.addEventListener('submit', function(e) {
-        const fileInputs = form.querySelectorAll('input[type="file"][required]');
+        // Récupérer la catégorie actuelle
+        const categorie = document.getElementById('categorie').value;
+        
+        // Sélectionner les bons champs de fichiers selon la catégorie
+        let fileInputs;
+        if (categorie === 'etudiant') {
+            fileInputs = document.querySelectorAll('#documentsEtudiant input[type="file"]');
+        } else {
+            fileInputs = document.querySelectorAll('#documentsEleve input[type="file"]');
+        }
+        
         let allFilesValid = true;
         let missingFiles = [];
         
@@ -416,13 +348,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }, 300);
             
-            form.addEventListener('submit', function() {
-                clearInterval(interval);
-            }, { once: true });
+            setTimeout(() => clearInterval(interval), 3000);
         }
     });
     
-    // Reset du formulaire
     form.addEventListener('reset', function() {
         setTimeout(() => {
             submitBtn.disabled = false;
@@ -430,10 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
             progressContainer.classList.add('d-none');
             progressText.classList.add('d-none');
             progressBar.style.width = '0%';
-            setActiveCategory('etudiant');
-            
-            // Effacer les noms de fichiers affichés
-            document.querySelectorAll('.file-name').forEach(span => span.textContent = '');
+            setCategory('etudiant');
         }, 100);
     });
 });
