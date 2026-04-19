@@ -13,7 +13,11 @@ class StudentRequest(db.Model):
     telephone = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     
-    # NOUVEAU : Établissement (texte libre)
+    # NOUVEAUX CHAMPS
+    date_naissance = db.Column(db.String(20), nullable=True)  # Date de naissance
+    lieu_naissance = db.Column(db.String(200), nullable=True)  # Lieu de naissance
+    
+    # Établissement (texte libre)
     etablissement = db.Column(db.String(200), nullable=False, default='')
     
     # Catégorie: eleve ou etudiant
@@ -31,7 +35,7 @@ class StudentRequest(db.Model):
     
     # File paths for uploaded documents (bourse)
     certificat_scolarite = db.Column(db.String(300))
-    bulletin_s2 = db.Column(db.String(300))  # Pour les élèves
+    bulletin_s2 = db.Column(db.String(300))
     
     # Status: pending, approved, rejected
     status = db.Column(db.String(20), default='pending')

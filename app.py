@@ -1015,6 +1015,8 @@ def formulaire_bourse():
             email = request.form.get('email', '').strip().lower()
             etablissement = request.form.get('etablissement', '').strip()
             categorie = request.form.get('categorie', 'etudiant').strip()
+            date_naissance = request.form.get('date_naissance', '').strip()  
+            lieu_naissance = request.form.get('lieu_naissance', '').strip()
             
             if not all([nom, prenom, adresse, telephone, email, etablissement]):
                 flash('Tous les champs sont obligatoires', 'error')
@@ -1036,6 +1038,8 @@ def formulaire_bourse():
                 email=email,
                 etablissement=etablissement,
                 categorie=categorie,
+                date_naissance=date_naissance,
+                lieu_naissance=lieu_naissance,
                 request_type='bourse',
                 status='pending'
             )
@@ -1465,60 +1469,118 @@ def export_admis_logement_pdf():
 
 @app.route('/admin/export/admis_bourse/pdf')
 def export_admis_bourse_pdf():
-    """Exporter la liste des admis à la bourse en PDF"""
+    """Exporter la liste des admis à la bourse en PDF avec émargement"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
     
-    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib import colors
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm
     import io
     
-    # Récupérer les données
+    # Récupérer les données (uniquement bourse approuvés)
     admis = StudentRequest.query.filter_by(request_type='bourse', status='approved').order_by(StudentRequest.nom).all()
     
+    # Utiliser le format paysage pour plus de largeur
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=1*cm, leftMargin=1*cm, topMargin=1*cm, bottomMargin=1*cm)
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), 
+                           rightMargin=1*cm, leftMargin=1*cm, 
+                           topMargin=1.5*cm, bottomMargin=1*cm)
     elements = []
     
     # Styles
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, alignment=1, spaceAfter=20)
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], 
+                                  fontSize=16, alignment=1, spaceAfter=10,
+                                  textColor=colors.HexColor('#1E3A8A'))
+    subtitle_style = ParagraphStyle('Subtitle', parent=styles['Normal'], 
+                                     fontSize=10, alignment=1, spaceAfter=20)
     
     # Titre
-    elements.append(Paragraph("Liste des admis - Bourse", title_style))
-    elements.append(Paragraph(f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}", styles['Normal']))
-    elements.append(Spacer(1, 10))
+    elements.append(Paragraph("Liste des bénéficiaires - Bourse REED", title_style))
+    elements.append(Paragraph(f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}", subtitle_style))
+    elements.append(Spacer(1, 15))
     
-    # Données du tableau
-    data = [['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Catégorie', 'Établissement', "Date d'approbation"]]
+    # En-têtes du tableau
+    data = [['N°', 'Prénom', 'Nom', 'Date de naissance', 'Lieu de naissance', 'Adresse', 'Émargement']]
     
-    for req in admis:
-        categorie = "Étudiant" if req.categorie == 'etudiant' else "Élève"
+    # Remplir les données
+    for idx, req in enumerate(admis, start=1):
+        # Formater la date de naissance
+        date_naiss = req.date_naissance if hasattr(req, 'date_naissance') and req.date_naissance else '-'
+        lieu_naiss = req.lieu_naissance if hasattr(req, 'lieu_naissance') and req.lieu_naissance else '-'
+        
         data.append([
-            str(req.id), req.nom, req.prenom, req.email, req.telephone,
-            categorie, req.etablissement or '-',
-            req.date_processed.strftime('%d/%m/%Y') if req.date_processed else '-'
+            str(idx),
+            req.prenom,
+            req.nom,
+            date_naiss,
+            lieu_naiss,
+            req.adresse[:50] + '...' if len(req.adresse) > 50 else req.adresse,
+            ''  # Case vide pour émargement (signature)
         ])
     
+    # Définir les largeurs des colonnes
+    col_widths = [1.5*cm, 3.5*cm, 3.5*cm, 3.5*cm, 4*cm, 6*cm, 3*cm]
+    
     # Créer le tableau
-    table = Table(data, repeatRows=1)
+    table = Table(data, colWidths=col_widths, repeatRows=1)
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#06B6D4')),
+        # En-tête
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1E3A8A')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+        ('TOPPADDING', (0, 0), (-1, 0), 10),
+        
+        # Lignes de données
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # Numéro centré
+        ('ALIGN', (6, 1), (6, -1), 'CENTER'),  # Émargement centré
+        ('VALIGN', (0, 1), (-1, -1), 'MIDDLE'),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+        ('TOPPADDING', (0, 1), (-1, -1), 8),
+        
+        # Alternance des couleurs
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('BACKGROUND', (0, 2), (-1, -2), colors.white),
+        
+        # Bordures
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('FONTSIZE', (0, 1), (-1, -1), 7),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#1E3A8A')),
+        
+        # Colonne émargement avec bordure spéciale
+        ('LINEBELOW', (6, 0), (6, -1), 0.5, colors.grey),
     ]))
     
     elements.append(table)
+    
+    # Ajouter un espace et une ligne de signature
+    elements.append(Spacer(1, 30))
+    
+    # Ligne de signature en bas
+    signature_data = [
+        ['', ''],
+        ['Date et signature du responsable', 'Cachet de la commission']
+    ]
+    
+    signature_table = Table(signature_data, colWidths=[9*cm, 9*cm])
+    signature_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LINEABOVE', (0, 0), (0, 0), 0.5, colors.black),
+        ('LINEABOVE', (1, 0), (1, 0), 0.5, colors.black),
+    ]))
+    
+    elements.append(signature_table)
+    
     doc.build(elements)
     buffer.seek(0)
     
