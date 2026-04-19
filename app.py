@@ -1469,21 +1469,21 @@ def export_admis_logement_pdf():
 
 @app.route('/admin/export/admis_bourse/pdf')
 def export_admis_bourse_pdf():
-    """Exporter la liste des admis à la bourse en PDF avec émargement"""
+    """Exporter la liste des admis à la bourse en PDF avec séparation élèves/étudiants"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
     
     from reportlab.lib.pagesizes import landscape, A4
     from reportlab.lib import colors
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm
     import io
     
-    # Récupérer les données (uniquement bourse approuvés)
-    admis = StudentRequest.query.filter_by(request_type='bourse', status='approved').order_by(StudentRequest.nom).all()
+    # Récupérer les données séparément
+    etudiants = StudentRequest.query.filter_by(request_type='bourse', status='approved', categorie='etudiant').order_by(StudentRequest.nom).all()
+    eleves = StudentRequest.query.filter_by(request_type='bourse', status='approved', categorie='eleve').order_by(StudentRequest.nom).all()
     
-    # Utiliser le format paysage pour plus de largeur
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), 
                            rightMargin=1*cm, leftMargin=1*cm, 
@@ -1495,33 +1495,33 @@ def export_admis_bourse_pdf():
     title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], 
                                   fontSize=16, alignment=1, spaceAfter=10,
                                   textColor=colors.HexColor('#1E3A8A'))
+    section_style = ParagraphStyle('SectionTitle', parent=styles['Heading2'], 
+                                    fontSize=14, alignment=1, spaceAfter=15,
+                                    textColor=colors.HexColor('#10B981'))
     subtitle_style = ParagraphStyle('Subtitle', parent=styles['Normal'], 
                                      fontSize=10, alignment=1, spaceAfter=20)
     
-    # Titre
+    date_str = datetime.now().strftime('%d/%m/%Y à %H:%M')
+    
+    # ==================== PAGE 1 : ÉTUDIANTS ====================
     elements.append(Paragraph("Liste des bénéficiaires - Bourse REED", title_style))
-    elements.append(Paragraph(f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}", subtitle_style))
+    elements.append(Paragraph(f"Généré le {date_str}", subtitle_style))
     elements.append(Spacer(1, 15))
     
-    # Vérifier s'il y a des données
-    if not admis:
-        # Message si aucune donnée
-        no_data_msg = Paragraph("Aucun bénéficiaire trouvé pour la bourse.", styles['Normal'])
-        elements.append(no_data_msg)
+    # Section Étudiants
+    elements.append(Paragraph("CATÉGORIE : ÉTUDIANTS", section_style))
+    elements.append(Spacer(1, 10))
+    
+    if not etudiants:
+        elements.append(Paragraph("Aucun étudiant bénéficiaire pour la bourse.", styles['Normal']))
     else:
         # En-têtes du tableau
-        data = [['N°', 'Prénom', 'Nom', 'Date de naissance', 'Lieu de naissance', 'Adresse', 'Émargement']]
+        data = [['N°', 'Prénom', 'Nom', 'Date de naissance', 'Lieu de naissance', 'Adresse', 'Établissement', 'Émargement']]
         
-        # Remplir les données
-        for idx, req in enumerate(admis, start=1):
-            # Formater la date de naissance
+        for idx, req in enumerate(etudiants, start=1):
             date_naiss = req.date_naissance if hasattr(req, 'date_naissance') and req.date_naissance else '-'
             lieu_naiss = req.lieu_naissance if hasattr(req, 'lieu_naissance') and req.lieu_naissance else '-'
-            
-            # Tronquer l'adresse si trop longue
-            adresse = req.adresse
-            if len(adresse) > 50:
-                adresse = adresse[:47] + '...'
+            adresse = req.adresse[:45] + '...' if len(req.adresse) > 45 else req.adresse
             
             data.append([
                 str(idx),
@@ -1530,61 +1530,121 @@ def export_admis_bourse_pdf():
                 date_naiss,
                 lieu_naiss,
                 adresse,
-                ''  # Case vide pour émargement
+                req.etablissement[:35] + '...' if len(req.etablissement) > 35 else req.etablissement,
+                ''
             ])
         
-        # Définir les largeurs des colonnes
-        col_widths = [1.5*cm, 3.5*cm, 3.5*cm, 3.5*cm, 4*cm, 6*cm, 3*cm]
+        col_widths = [1.2*cm, 3*cm, 3*cm, 3*cm, 3.5*cm, 5*cm, 4*cm, 2.5*cm]
         
-        # Créer le tableau
         table = Table(data, colWidths=col_widths, repeatRows=1)
         table.setStyle(TableStyle([
-            # En-tête
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1E3A8A')),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10B981')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
             ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
             ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
-            ('TOPPADDING', (0, 0), (-1, 0), 10),
-            
-            # Lignes de données
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+            ('TOPPADDING', (0, 0), (-1, 0), 8),
             ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 9),
-            ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # Numéro centré
-            ('ALIGN', (6, 1), (6, -1), 'CENTER'),  # Émargement centré
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+            ('ALIGN', (7, 1), (7, -1), 'CENTER'),
             ('VALIGN', (0, 1), (-1, -1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
-            ('TOPPADDING', (0, 1), (-1, -1), 8),
-            
-            # Bordures
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+            ('TOPPADDING', (0, 1), (-1, -1), 6),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#1E3A8A')),
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#10B981')),
         ]))
         
         elements.append(table)
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph(f"Nombre total d'étudiants : {len(etudiants)}", styles['Normal']))
+    
+    # ==================== PAGE 2 : ÉLÈVES ====================
+    elements.append(PageBreak())
+    
+    elements.append(Paragraph("Liste des bénéficiaires - Bourse REED", title_style))
+    elements.append(Paragraph(f"Généré le {date_str}", subtitle_style))
+    elements.append(Spacer(1, 15))
+    
+    # Section Élèves
+    elements.append(Paragraph("CATÉGORIE : ÉLÈVES", section_style))
+    elements.append(Spacer(1, 10))
+    
+    if not eleves:
+        elements.append(Paragraph("Aucun élève bénéficiaire pour la bourse.", styles['Normal']))
+    else:
+        # En-têtes du tableau (identique pour élèves)
+        data = [['N°', 'Prénom', 'Nom', 'Date de naissance', 'Lieu de naissance', 'Adresse', 'Établissement', 'Émargement']]
         
-        # Ajouter un espace et les lignes de signature
-        elements.append(Spacer(1, 30))
+        for idx, req in enumerate(eleves, start=1):
+            date_naiss = req.date_naissance if hasattr(req, 'date_naissance') and req.date_naissance else '-'
+            lieu_naiss = req.lieu_naissance if hasattr(req, 'lieu_naissance') and req.lieu_naissance else '-'
+            adresse = req.adresse[:45] + '...' if len(req.adresse) > 45 else req.adresse
+            
+            data.append([
+                str(idx),
+                req.prenom,
+                req.nom,
+                date_naiss,
+                lieu_naiss,
+                adresse,
+                req.etablissement[:35] + '...' if len(req.etablissement) > 35 else req.etablissement,
+                ''
+            ])
         
-        # Ligne de signature en bas
-        signature_data = [
-            ['', ''],
-            ['Date et signature du responsable', 'Cachet de la commission']
-        ]
+        col_widths = [1.2*cm, 3*cm, 3*cm, 3*cm, 3.5*cm, 5*cm, 4*cm, 2.5*cm]
         
-        signature_table = Table(signature_data, colWidths=[9*cm, 9*cm])
-        signature_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTSIZE', (0, 0), (-1, -1), 9),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('LINEABOVE', (0, 0), (0, 0), 0.5, colors.black),
-            ('LINEABOVE', (1, 0), (1, 0), 0.5, colors.black),
-            ('TOPPADDING', (0, 0), (-1, -1), 15),
+        table = Table(data, colWidths=col_widths, repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#F59E0B')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+            ('TOPPADDING', (0, 0), (-1, 0), 8),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+            ('ALIGN', (7, 1), (7, -1), 'CENTER'),
+            ('VALIGN', (0, 1), (-1, -1), 'MIDDLE'),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+            ('TOPPADDING', (0, 1), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#F59E0B')),
         ]))
         
-        elements.append(signature_table)
+        elements.append(table)
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph(f"Nombre total d'élèves : {len(eleves)}", styles['Normal']))
+    
+    # ==================== PAGE DE SIGNATURE (optionnelle) ====================
+    elements.append(PageBreak())
+    
+    elements.append(Paragraph("Liste des bénéficiaires - Bourse REED", title_style))
+    elements.append(Paragraph(f"Généré le {date_str}", subtitle_style))
+    elements.append(Spacer(1, 30))
+    
+    # Lignes de signature
+    signature_data = [
+        ['', ''],
+        ['Date et signature du responsable', 'Cachet de la commission']
+    ]
+    
+    signature_table = Table(signature_data, colWidths=[9*cm, 9*cm])
+    signature_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LINEABOVE', (0, 0), (0, 0), 0.5, colors.black),
+        ('LINEABOVE', (1, 0), (1, 0), 0.5, colors.black),
+        ('TOPPADDING', (0, 0), (-1, -1), 20),
+    ]))
+    
+    elements.append(signature_table)
     
     doc.build(elements)
     buffer.seek(0)
