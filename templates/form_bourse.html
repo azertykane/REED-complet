@@ -91,7 +91,7 @@
                         </div>
                     </div>
 
-                    <form method="POST" action="{{ url_for('formulaire_bourse') }}" enctype="multipart/form-data" id="demandeBourseForm">
+                    <form method="POST" action="{{ url_for('formulaire_bourse') }}" enctype="multipart/form-data" id="demandeBourseForm" novalidate>
                         <input type="hidden" id="categorie" name="categorie" value="etudiant">
                         
                         <h3 class="h5 mb-3 text-primary">
@@ -144,35 +144,35 @@
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
                                         <label class="form-label fw-semibold">Demande manuscrite <span class="required-star">*</span></label>
-                                        <input type="file" class="form-control form-control-sm" name="demande_manuscrite" accept=".pdf,.jpg,.jpeg,.png" required>
+                                        <input type="file" class="form-control form-control-sm" name="demande_manuscrite" accept=".pdf,.jpg,.jpeg,.png">
                                         <small class="form-text text-muted">Lettre manuscrite adressée au Maire</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
                                         <label class="form-label fw-semibold">Carte étudiant / Certificat d'inscription <span class="required-star">*</span></label>
-                                        <input type="file" class="form-control form-control-sm" name="certificat_inscription" accept=".pdf,.jpg,.jpeg,.png" required>
+                                        <input type="file" class="form-control form-control-sm" name="certificat_inscription" accept=".pdf,.jpg,.jpeg,.png">
                                         <small class="form-text text-muted">Carte étudiant ou certificat d'inscription validé</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
                                         <label class="form-label fw-semibold">Photocopie carte d'identité <span class="required-star">*</span></label>
-                                        <input type="file" class="form-control form-control-sm" name="copie_cni" accept=".pdf,.jpg,.jpeg,.png" required>
+                                        <input type="file" class="form-control form-control-sm" name="copie_cni" accept=".pdf,.jpg,.jpeg,.png">
                                         <small class="form-text text-muted">CNI recto-verso</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-6 mb-3">
                                     <div class="document-upload">
                                         <label class="form-label fw-semibold">Certificat de résidence <span class="required-star">*</span></label>
-                                        <input type="file" class="form-control form-control-sm" name="certificat_residence" accept=".pdf,.jpg,.jpeg,.png" required>
+                                        <input type="file" class="form-control form-control-sm" name="certificat_residence" accept=".pdf,.jpg,.jpeg,.png">
                                         <small class="form-text text-muted">Justificatif de domicile</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-6 mb-3">
                                     <div class="document-upload">
                                         <label class="form-label fw-semibold">Carte membre REED <span class="required-star">*</span></label>
-                                        <input type="file" class="form-control form-control-sm" name="carte_membre_reed" accept=".pdf,.jpg,.jpeg,.png" required>
+                                        <input type="file" class="form-control form-control-sm" name="carte_membre_reed" accept=".pdf,.jpg,.jpeg,.png">
                                         <small class="form-text text-muted">Carte de membre REED valide</small>
                                     </div>
                                 </div>
@@ -189,35 +189,35 @@
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
                                         <label class="form-label fw-semibold">Demande manuscrite <span class="required-star">*</span></label>
-                                        <input type="file" class="form-control form-control-sm" name="demande_manuscrite" accept=".pdf,.jpg,.jpeg,.png" required>
+                                        <input type="file" class="form-control form-control-sm" name="demande_manuscrite" accept=".pdf,.jpg,.jpeg,.png">
                                         <small class="form-text text-muted">Lettre manuscrite adressée au Maire</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
                                         <label class="form-label fw-semibold">Certificat de scolarité <span class="required-star">*</span></label>
-                                        <input type="file" class="form-control form-control-sm" name="certificat_scolarite" accept=".pdf,.jpg,.jpeg,.png" required>
+                                        <input type="file" class="form-control form-control-sm" name="certificat_scolarite" accept=".pdf,.jpg,.jpeg,.png">
                                         <small class="form-text text-muted">Certificat de scolarité de l'année en cours</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-4 mb-3">
                                     <div class="document-upload">
                                         <label class="form-label fw-semibold">Bulletin 2ème Semestre <span class="required-star">*</span></label>
-                                        <input type="file" class="form-control form-control-sm" name="bulletin_s2" accept=".pdf,.jpg,.jpeg,.png" required>
+                                        <input type="file" class="form-control form-control-sm" name="bulletin_s2" accept=".pdf,.jpg,.jpeg,.png">
                                         <small class="form-text text-muted">Bulletin du 2ème semestre</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-6 mb-3">
                                     <div class="document-upload">
                                         <label class="form-label fw-semibold">Certificat de résidence <span class="required-star">*</span></label>
-                                        <input type="file" class="form-control form-control-sm" name="certificat_residence" accept=".pdf,.jpg,.jpeg,.png" required>
+                                        <input type="file" class="form-control form-control-sm" name="certificat_residence" accept=".pdf,.jpg,.jpeg,.png">
                                         <small class="form-text text-muted">Justificatif de domicile</small>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6 col-lg-6 mb-3">
                                     <div class="document-upload">
                                         <label class="form-label fw-semibold">Carte membre REED <span class="required-star">*</span></label>
-                                        <input type="file" class="form-control form-control-sm" name="carte_membre_reed" accept=".pdf,.jpg,.jpeg,.png" required>
+                                        <input type="file" class="form-control form-control-sm" name="carte_membre_reed" accept=".pdf,.jpg,.jpeg,.png">
                                         <small class="form-text text-muted">Carte de membre REED valide</small>
                                     </div>
                                 </div>
@@ -265,6 +265,13 @@ function setCategory(category) {
     const docsEleve = document.getElementById('documentsEleve');
     const categorieInput = document.getElementById('categorie');
     
+    // Désactiver tous les champs de fichiers des deux groupes
+    const allFileInputs = document.querySelectorAll('#documentsEtudiant input[type="file"], #documentsEleve input[type="file"]');
+    allFileInputs.forEach(input => {
+        input.disabled = true;
+        input.required = false;
+    });
+    
     categorieInput.value = category;
     
     if (category === 'etudiant') {
@@ -272,11 +279,25 @@ function setCategory(category) {
         btnEleve.classList.remove('active');
         docsEtudiant.classList.remove('hide');
         docsEleve.classList.add('hide');
+        
+        // Activer les champs du groupe étudiant
+        const etudiantInputs = docsEtudiant.querySelectorAll('input[type="file"]');
+        etudiantInputs.forEach(input => {
+            input.disabled = false;
+            input.required = true;
+        });
     } else {
         btnEtudiant.classList.remove('active');
         btnEleve.classList.add('active');
         docsEtudiant.classList.add('hide');
         docsEleve.classList.remove('hide');
+        
+        // Activer les champs du groupe élève
+        const eleveInputs = docsEleve.querySelectorAll('input[type="file"]');
+        eleveInputs.forEach(input => {
+            input.disabled = false;
+            input.required = true;
+        });
     }
 }
 
@@ -287,35 +308,58 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
     
+    // Désactiver la validation HTML5 native (nous utilisons notre propre validation)
+    form.setAttribute('novalidate', 'novalidate');
+    
     // Initialisation
     setCategory('etudiant');
     
+    // Validation personnalisée avant soumission
     form.addEventListener('submit', function(e) {
-        // Simple validation des fichiers (le required du HTML fera le reste)
-        const fileInputs = form.querySelectorAll('input[type="file"]');
-        let hasError = false;
+        // Récupérer la catégorie actuelle
+        const categorie = document.getElementById('categorie').value;
+        
+        // Sélectionner les bons champs de fichiers selon la catégorie
+        let fileInputs;
+        if (categorie === 'etudiant') {
+            fileInputs = document.querySelectorAll('#documentsEtudiant input[type="file"]');
+        } else {
+            fileInputs = document.querySelectorAll('#documentsEleve input[type="file"]');
+        }
+        
+        let allFilesValid = true;
+        let missingFiles = [];
         
         fileInputs.forEach(input => {
-            if (input.files.length > 0) {
+            if (input.files.length === 0) {
+                const label = input.closest('.document-upload')?.querySelector('.form-label')?.textContent || input.name;
+                missingFiles.push(label.replace('*', '').trim());
+                allFilesValid = false;
+            } else {
                 const file = input.files[0];
                 const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
                 const maxSize = 16 * 1024 * 1024;
                 
                 if (!validTypes.includes(file.type)) {
                     alert(`❌ Le fichier "${file.name}" doit être au format PDF, JPG ou PNG`);
-                    hasError = true;
+                    allFilesValid = false;
                     e.preventDefault();
                 }
                 
                 if (file.size > maxSize) {
                     alert(`⚠️ Le fichier "${file.name}" est trop volumineux (max 16MB)`);
-                    hasError = true;
+                    allFilesValid = false;
                     e.preventDefault();
                 }
             }
         });
         
-        if (!hasError) {
+        if (!allFilesValid && missingFiles.length > 0) {
+            alert(`Veuillez fournir les documents suivants:\n- ${missingFiles.join('\n- ')}`);
+            e.preventDefault();
+        }
+        
+        if (allFilesValid) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Traitement en cours...';
             progressContainer.classList.remove('d-none');
