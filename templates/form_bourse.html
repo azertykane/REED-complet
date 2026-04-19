@@ -31,12 +31,38 @@
         border-radius: 15px;
         margin-bottom: 2rem;
     }
-    .bourse-requirements {
-        background: white;
-        border-left: 4px solid #f093fb;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        border-radius: 0 10px 10px 0;
+    /* Styles pour le switcher */
+    .category-switch {
+        background: #f1f5f9;
+        border-radius: 50px;
+        padding: 5px;
+        display: inline-flex;
+        gap: 5px;
+        margin-bottom: 2rem;
+    }
+    .category-btn {
+        padding: 12px 30px;
+        border-radius: 50px;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: transparent;
+        color: #64748b;
+    }
+    .category-btn.active {
+        background: linear-gradient(135deg, #f093fb, #f5576c);
+        color: white;
+        box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+    }
+    .category-btn:hover:not(.active) {
+        background: #e2e8f0;
+    }
+    .document-group {
+        transition: all 0.3s ease;
+    }
+    .document-group.hide {
+        display: none;
     }
     #progress-bar {
         height: 4px;
@@ -60,39 +86,23 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-12 col-lg-10">
-            <!-- Informations sur les bourses -->
-            <div class="bourse-info">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h4 class="fw-bold mb-3">
-                            <i class="fas fa-graduation-cap me-2"></i>Pour les élèves
-                        </h4>
-                        <ul class="mb-0 ps-3">
-                            <li>Demande manuscrite adressée au Maire</li>
-                            <li>Certificat de Scolarité</li>
-                            <li>Certificat de Résidence</li>
-                            <li>Carte membre REED</li>
-                            <li>Bulletin 2ème Semestre</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h4 class="fw-bold mb-3">
-                            <i class="fas fa-university me-2"></i>Pour les étudiants
-                        </h4>
-                        <ul class="mb-0 ps-3">
-                            <li>Demande manuscrite adressée au Maire</li>
-                            <li>Carte étudiant ou certificat d'inscription validé</li>
-                            <li>Photocopie carte d'identité</li>
-                            <li>Certificat de Résidence</li>
-                            <li>Carte membre REED</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
             <div class="card shadow border-0 mb-4">
                 <div class="card-body p-3 p-md-4">
+                    <!-- SWITCHER ÉLÈVE / ÉTUDIANT -->
+                    <div class="text-center">
+                        <div class="category-switch">
+                            <button type="button" class="category-btn" id="btnEtudiant" data-category="etudiant">
+                                <i class="fas fa-university me-2"></i>Étudiant
+                            </button>
+                            <button type="button" class="category-btn" id="btnEleve" data-category="eleve">
+                                <i class="fas fa-graduation-cap me-2"></i>Élève
+                            </button>
+                        </div>
+                    </div>
+
                     <form method="POST" action="{{ url_for('formulaire_bourse') }}" enctype="multipart/form-data" id="demandeBourseForm">
+                        <input type="hidden" id="categorie" name="categorie" value="etudiant">
+                        
                         <h3 class="h5 mb-3 text-primary">
                             <i class="fas fa-user-circle me-2"></i>Informations personnelles
                         </h3>
@@ -118,15 +128,11 @@
                                 <label for="email" class="form-label fw-semibold">Email *</label>
                                 <input type="email" class="form-control" id="email" name="email" required>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="region_universitaire" class="form-label">Région universitaire *</label>
-                                <select class="form-select" id="region_universitaire" name="region_universitaire" required>
-                                    <option value="">Sélectionnez votre région...</option>
-                                    {% for region in regions_universitaires %}
-                                    <option value="{{ region }}">{{ region }}</option>
-                                    {% endfor %}
-                                </select>
-                                <small class="form-text text-muted">Région où vous étudiez</small>
+                            <div class="col-md-12 mb-3">
+                                <label for="etablissement" class="form-label fw-semibold">Établissement *</label>
+                                <input type="text" class="form-control" id="etablissement" name="etablissement" required 
+                                       placeholder="Nom de votre école, lycée, université...">
+                                <small class="form-text text-muted">Indiquez le nom de votre établissement</small>
                             </div>
                         </div>
 
@@ -137,57 +143,123 @@
                         </h3>
                         <p class="text-muted mb-3">Tous les documents doivent être au format PDF (max 16MB)</p>
 
-                        <div class="row">
-                            <!-- Documents pour bourse -->
-                            <div class="col-12 col-md-6 col-lg-4 mb-3">
-                                <div class="document-upload">
-                                    <label for="demande_manuscrite" class="form-label fw-semibold">
-                                        <i class="fas fa-pen-fancy me-1"></i>Demande manuscrite *
-                                    </label>
-                                    <input type="file" class="form-control form-control-sm" id="demande_manuscrite" 
-                                           name="demande_manuscrite" accept=".pdf" required>
-                                    <small class="form-text text-muted d-block mt-1">Lettre manuscrite de motivation</small>
+                        <!-- GROUPES DE DOCUMENTS -->
+                        <!-- Groupe Étudiant -->
+                        <div id="documentsEtudiant" class="document-group">
+                            <div class="alert alert-info mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Documents requis pour les étudiants</strong>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                    <div class="document-upload">
+                                        <label for="demande_manuscrite" class="form-label fw-semibold">
+                                            <i class="fas fa-pen-fancy me-1"></i>Demande manuscrite *
+                                        </label>
+                                        <input type="file" class="form-control form-control-sm" id="demande_manuscrite" 
+                                               name="demande_manuscrite" accept=".pdf" required>
+                                        <small class="form-text text-muted d-block mt-1">Lettre manuscrite adressée au Maire</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                    <div class="document-upload">
+                                        <label for="certificat_inscription" class="form-label fw-semibold">
+                                            <i class="fas fa-id-card me-1"></i>Carte étudiant / Certificat d'inscription *
+                                        </label>
+                                        <input type="file" class="form-control form-control-sm" id="certificat_inscription" 
+                                               name="certificat_inscription" accept=".pdf" required>
+                                        <small class="form-text text-muted d-block mt-1">Carte étudiant ou certificat d'inscription validé</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                    <div class="document-upload">
+                                        <label for="copie_cni" class="form-label fw-semibold">
+                                            <i class="fas fa-id-card me-1"></i>Photocopie carte d'identité *
+                                        </label>
+                                        <input type="file" class="form-control form-control-sm" id="copie_cni" 
+                                               name="copie_cni" accept=".pdf" required>
+                                        <small class="form-text text-muted d-block mt-1">CNI recto-verso</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-6 mb-3">
+                                    <div class="document-upload">
+                                        <label for="certificat_residence" class="form-label fw-semibold">
+                                            <i class="fas fa-home me-1"></i>Certificat de résidence *
+                                        </label>
+                                        <input type="file" class="form-control form-control-sm" id="certificat_residence" 
+                                               name="certificat_residence" accept=".pdf" required>
+                                        <small class="form-text text-muted d-block mt-1">Justificatif de domicile</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-6 mb-3">
+                                    <div class="document-upload">
+                                        <label for="carte_membre_reed" class="form-label fw-semibold">
+                                            <i class="fas fa-address-card me-1"></i>Carte membre REED *
+                                        </label>
+                                        <input type="file" class="form-control form-control-sm" id="carte_membre_reed" 
+                                               name="carte_membre_reed" accept=".pdf" required>
+                                        <small class="form-text text-muted d-block mt-1">Carte de membre REED valide</small>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-6 col-lg-4 mb-3">
-                                <div class="document-upload">
-                                    <label for="certificat_scolarite" class="form-label fw-semibold">
-                                        <i class="fas fa-graduation-cap me-1"></i>Certificat de scolarité *
-                                    </label>
-                                    <input type="file" class="form-control form-control-sm" id="certificat_scolarite" 
-                                           name="certificat_scolarite" accept=".pdf" required>
-                                    <small class="form-text text-muted d-block mt-1">Pour les élèves</small>
-                                </div>
+                        </div>
+
+                        <!-- Groupe Élève -->
+                        <div id="documentsEleve" class="document-group hide">
+                            <div class="alert alert-success mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Documents requis pour les élèves</strong>
                             </div>
-                            <div class="col-12 col-md-6 col-lg-4 mb-3">
-                                <div class="document-upload">
-                                    <label for="certificat_residence" class="form-label fw-semibold">
-                                        <i class="fas fa-home me-1"></i>Certificat de résidence *
-                                    </label>
-                                    <input type="file" class="form-control form-control-sm" id="certificat_residence" 
-                                           name="certificat_residence" accept=".pdf" required>
-                                    <small class="form-text text-muted d-block mt-1">Justificatif de domicile</small>
+                            <div class="row">
+                                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                    <div class="document-upload">
+                                        <label for="demande_manuscrite_eleve" class="form-label fw-semibold">
+                                            <i class="fas fa-pen-fancy me-1"></i>Demande manuscrite *
+                                        </label>
+                                        <input type="file" class="form-control form-control-sm" id="demande_manuscrite_eleve" 
+                                               name="demande_manuscrite" accept=".pdf" required>
+                                        <small class="form-text text-muted d-block mt-1">Lettre manuscrite adressée au Maire</small>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="col-12 col-md-6 col-lg-4 mb-3">
-                                <div class="document-upload">
-                                    <label for="carte_membre_reed" class="form-label fw-semibold">
-                                        <i class="fas fa-address-card me-1"></i>Carte membre REED *
-                                    </label>
-                                    <input type="file" class="form-control form-control-sm" id="carte_membre_reed" 
-                                           name="carte_membre_reed" accept=".pdf" required>
-                                    <small class="form-text text-muted d-block mt-1">Carte de membre REED valide</small>
+                                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                    <div class="document-upload">
+                                        <label for="certificat_scolarite" class="form-label fw-semibold">
+                                            <i class="fas fa-graduation-cap me-1"></i>Certificat de scolarité *
+                                        </label>
+                                        <input type="file" class="form-control form-control-sm" id="certificat_scolarite" 
+                                               name="certificat_scolarite" accept=".pdf" required>
+                                        <small class="form-text text-muted d-block mt-1">Certificat de scolarité de l'année en cours</small>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-12 col-md-6 col-lg-4 mb-3">
-                                <div class="document-upload">
-                                    <label for="bulletin_s2" class="form-label fw-semibold">
-                                        <i class="fas fa-file-alt me-1"></i>Bulletin 2ème Semestre *
-                                    </label>
-                                    <input type="file" class="form-control form-control-sm" id="bulletin_s2" 
-                                           name="bulletin_s2" accept=".pdf" required>
-                                    <small class="form-text text-muted d-block mt-1">Pour les élèves</small>
+                                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                    <div class="document-upload">
+                                        <label for="bulletin_s2" class="form-label fw-semibold">
+                                            <i class="fas fa-file-alt me-1"></i>Bulletin 2ème Semestre *
+                                        </label>
+                                        <input type="file" class="form-control form-control-sm" id="bulletin_s2" 
+                                               name="bulletin_s2" accept=".pdf" required>
+                                        <small class="form-text text-muted d-block mt-1">Bulletin du 2ème semestre</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-6 mb-3">
+                                    <div class="document-upload">
+                                        <label for="certificat_residence_eleve" class="form-label fw-semibold">
+                                            <i class="fas fa-home me-1"></i>Certificat de résidence *
+                                        </label>
+                                        <input type="file" class="form-control form-control-sm" id="certificat_residence_eleve" 
+                                               name="certificat_residence" accept=".pdf" required>
+                                        <small class="form-text text-muted d-block mt-1">Justificatif de domicile</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-6 mb-3">
+                                    <div class="document-upload">
+                                        <label for="carte_membre_reed_eleve" class="form-label fw-semibold">
+                                            <i class="fas fa-address-card me-1"></i>Carte membre REED *
+                                        </label>
+                                        <input type="file" class="form-control form-control-sm" id="carte_membre_reed_eleve" 
+                                               name="carte_membre_reed" accept=".pdf" required>
+                                        <small class="form-text text-muted d-block mt-1">Carte de membre REED valide</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -196,9 +268,9 @@
                             <h5 class="h6 mb-2"><i class="fas fa-info-circle me-2"></i>Important</h5>
                             <ul class="mb-0 ps-3">
                                 <li class="mb-1">Tous les champs marqués d'un * sont obligatoires</li>
-                                <li class="mb-1">Votre demande sera traitée au lendemain de fermeture des dépots</li>
+                                <li class="mb-1">Votre demande sera traitée au lendemain de fermeture des dépôts</li>
                                 <li class="mb-1">Vous recevrez une notification par email du résultat</li>
-                                <li class="mb-1">Les documents doivent être scannés et convertis en pdf</li>
+                                <li class="mb-1">Les documents doivent être scannés et convertis en PDF</li>
                             </ul>
                         </div>
 
@@ -233,25 +305,71 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
     
+    // Gestion du switcher Élève/Étudiant
+    const btnEtudiant = document.getElementById('btnEtudiant');
+    const btnEleve = document.getElementById('btnEleve');
+    const docsEtudiant = document.getElementById('documentsEtudiant');
+    const docsEleve = document.getElementById('documentsEleve');
+    const categorieInput = document.getElementById('categorie');
+    
+    // Désactiver les champs requis du groupe caché
+    function updateRequiredFields() {
+        // Pour les étudiants
+        const etudiantInputs = docsEtudiant.querySelectorAll('input[required]');
+        // Pour les élèves
+        const eleveInputs = docsEleve.querySelectorAll('input[required]');
+        
+        if (categorieInput.value === 'etudiant') {
+            etudiantInputs.forEach(input => input.required = true);
+            eleveInputs.forEach(input => input.required = false);
+        } else {
+            etudiantInputs.forEach(input => input.required = false);
+            eleveInputs.forEach(input => input.required = true);
+        }
+    }
+    
+    function setActiveCategory(category) {
+        categorieInput.value = category;
+        
+        if (category === 'etudiant') {
+            btnEtudiant.classList.add('active');
+            btnEleve.classList.remove('active');
+            docsEtudiant.classList.remove('hide');
+            docsEleve.classList.add('hide');
+        } else {
+            btnEtudiant.classList.remove('active');
+            btnEleve.classList.add('active');
+            docsEtudiant.classList.add('hide');
+            docsEleve.classList.remove('hide');
+        }
+        updateRequiredFields();
+    }
+    
+    btnEtudiant.addEventListener('click', () => setActiveCategory('etudiant'));
+    btnEleve.addEventListener('click', () => setActiveCategory('eleve'));
+    
+    // Initialisation
+    setActiveCategory('etudiant');
+    
     form.addEventListener('submit', function(e) {
         // Validation des fichiers
-        const fileInputs = form.querySelectorAll('input[type="file"]');
+        const fileInputs = form.querySelectorAll('input[type="file"][required]');
         let allFilesValid = true;
         
         fileInputs.forEach(input => {
             if (input.files.length > 0) {
                 const file = input.files[0];
                 const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-                const maxSize = 16 * 1024 * 1024; // 16MB
+                const maxSize = 16 * 1024 * 1024;
                 
                 if (!validTypes.includes(file.type)) {
-                    alert(`❌ Le fichier ${input.previousElementSibling.textContent.trim()} doit être au format PDF, JPG ou PNG`);
+                    alert(`❌ Le fichier doit être au format PDF, JPG ou PNG`);
                     allFilesValid = false;
                     e.preventDefault();
                 }
                 
                 if (file.size > maxSize) {
-                    alert(`⚠️ Le fichier ${input.previousElementSibling.textContent.trim()} est trop volumineux (max 16MB)`);
+                    alert(`⚠️ Le fichier est trop volumineux (max 16MB)`);
                     allFilesValid = false;
                     e.preventDefault();
                 }
@@ -259,13 +377,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         if (allFilesValid) {
-            // Afficher la progression
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Traitement...';
             progressContainer.classList.remove('d-none');
             progressText.classList.remove('d-none');
             
-            // Animation de progression
             let progress = 0;
             const interval = setInterval(() => {
                 progress += 10;
@@ -274,20 +390,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }, 300);
             
-            // Nettoyer l'intervalle lors de la soumission
             form.addEventListener('submit', function() {
                 clearInterval(interval);
             }, { once: true });
         }
     });
     
-    // Reset du formulaire
     form.addEventListener('reset', function() {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Soumettre la demande';
         progressContainer.classList.add('d-none');
         progressText.classList.add('d-none');
         progressBar.style.width = '0%';
+        setActiveCategory('etudiant');
     });
 });
 </script>

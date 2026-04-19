@@ -13,8 +13,11 @@ class StudentRequest(db.Model):
     telephone = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     
-    # NOUVEAU : Région universitaire
-    region_universitaire = db.Column(db.String(100), nullable=False, default='Dakar')
+    # NOUVEAU : Établissement (texte libre)
+    etablissement = db.Column(db.String(200), nullable=False, default='')
+    
+    # Catégorie: eleve ou etudiant
+    categorie = db.Column(db.String(20), nullable=False, default='etudiant')
     
     # Type de demande: logement ou bourse
     request_type = db.Column(db.String(20), nullable=False, default='logement')
@@ -28,6 +31,7 @@ class StudentRequest(db.Model):
     
     # File paths for uploaded documents (bourse)
     certificat_scolarite = db.Column(db.String(300))
+    bulletin_s2 = db.Column(db.String(300))  # Pour les élèves
     
     # Status: pending, approved, rejected
     status = db.Column(db.String(20), default='pending')

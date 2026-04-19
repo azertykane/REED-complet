@@ -948,9 +948,10 @@ def formulaire_bourse():
             adresse = request.form.get('adresse', '').strip()
             telephone = request.form.get('telephone', '').strip()
             email = request.form.get('email', '').strip().lower()
-            region_universitaire = request.form.get('region_universitaire', 'Dakar').strip()
+            etablissement = request.form.get('etablissement', '').strip()  # NOUVEAU
+            categorie = request.form.get('categorie', 'etudiant').strip()  # NOUVEAU
             
-            if not all([nom, prenom, adresse, telephone, email, region_universitaire]):
+            if not all([nom, prenom, adresse, telephone, email, etablissement]):
                 flash('Tous les champs sont obligatoires', 'error')
                 return redirect(url_for('formulaire_bourse'))
             
@@ -968,19 +969,31 @@ def formulaire_bourse():
                 adresse=adresse,
                 telephone=telephone,
                 email=email,
-                region_universitaire=region_universitaire,
+                etablissement=etablissement,  # NOUVEAU
+                categorie=categorie,  # NOUVEAU
                 request_type='bourse',
                 status='pending'
             )
             
-            files_required = {
-                'demande_manuscrite': 'demande_manuscrite',
-                'certificat_scolarite': 'certificat_scolarite',
-                'certificat_residence': 'certificat_residence',
-                'carte_membre_reed': 'carte_membre_reed',
-                'bulletin_s2': 'bulletin_s2'
-            }
+            # Gestion des fichiers selon la catégorie
+            if categorie == 'etudiant':
+                files_required = {
+                    'demande_manuscrite': 'demande_manuscrite',
+                    'certificat_inscription': 'certificat_inscription',
+                    'copie_cni': 'copie_cni',
+                    'certificat_residence': 'certificat_residence',
+                    'carte_membre_reed': 'carte_membre_reed'
+                }
+            else:  # eleve
+                files_required = {
+                    'demande_manuscrite': 'demande_manuscrite',
+                    'certificat_scolarite': 'certificat_scolarite',
+                    'bulletin_s2': 'bulletin_s2',
+                    'certificat_residence': 'certificat_residence',
+                    'carte_membre_reed': 'carte_membre_reed'
+                }
             
+            # Vérifier tous les fichiers
             for field, file_key in files_required.items():
                 file = request.files.get(file_key)
                 if not file or file.filename == '':
@@ -1006,7 +1019,7 @@ def formulaire_bourse():
             db.session.commit()
             
             try:
-                send_confirmation_email_bourse(email, nom, prenom, new_request.id)
+                send_confirmation_email_bourse(email, nom, prenom, new_request.id, categorie)
             except Exception as email_error:
                 print(f"Erreur programmation email: {email_error}")
             
@@ -1019,12 +1032,7 @@ def formulaire_bourse():
             flash('Une erreur est survenue. Veuillez réessayer.', 'error')
             return redirect(url_for('formulaire_bourse'))
     
-    regions_universitaires = [
-        'Dakar', 'Thiès', 'Saint-Louis', 'Ziguinchor', 'Kolda',
-        'Tambacounda', 'Kaolack', 'Fatick', 'Diourbel', 'Louga',
-        'Matam', 'Kédougou', 'Sédhiou'
-    ]
-    return render_template('form_bourse.html', regions_universitaires=regions_universitaires)
+    return render_template('form_bourse.html')
 
 def send_confirmation_email_bourse(to_email, nom, prenom, request_id):
     """Envoyer un email de confirmation pour demande de bourse"""
