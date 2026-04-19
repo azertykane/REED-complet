@@ -1171,137 +1171,272 @@ def admin_application_status():
                          logement_pending=logement_pending,
                          bourse_pending=bourse_pending)
 
-@app.route('/admin/export/logement')
-def export_logement():
-    """Exporter la liste des demandes de logement en CSV"""
+@app.route('/admin/export/logement/pdf')
+def export_logement_pdf():
+    """Exporter la liste des demandes de logement en PDF"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
     
-    import csv
-    from io import StringIO
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    import io
     
-    # Récupérer les demandes de logement
+    # Récupérer les données
     logements = StudentRequest.query.filter_by(request_type='logement').order_by(StudentRequest.date_submitted.desc()).all()
     
-    # Créer le CSV
-    output = StringIO()
-    writer = csv.writer(output)
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=1*cm, leftMargin=1*cm, topMargin=1*cm, bottomMargin=1*cm)
+    elements = []
     
-    # En-têtes
-    writer.writerow(['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Adresse', 'Région', 'Statut', 'Date de soumission'])
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, alignment=1, spaceAfter=20)
+    header_style = ParagraphStyle('Header', parent=styles['Normal'], fontSize=8, textColor=colors.white)
+    cell_style = ParagraphStyle('Cell', parent=styles['Normal'], fontSize=7)
     
-    # Données
+    # Titre
+    elements.append(Paragraph("Liste des demandes de logement", title_style))
+    elements.append(Paragraph(f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}", styles['Normal']))
+    elements.append(Spacer(1, 10))
+    
+    # Données du tableau
+    data = [['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Région', 'Statut', 'Date']]
+    
     for req in logements:
-        writer.writerow([
-            req.id, req.nom, req.prenom, req.email, req.telephone,
-            req.adresse, req.region_universitaire or req.etablissement,
-            req.status, req.date_submitted.strftime('%d/%m/%Y %H:%M')
+        status = "En attente" if req.status == 'pending' else ("Approuvé" if req.status == 'approved' else "Rejeté")
+        data.append([
+            str(req.id), req.nom, req.prenom, req.email, req.telephone,
+            req.region_universitaire or '-', status,
+            req.date_submitted.strftime('%d/%m/%Y')
         ])
     
-    # Envoyer le fichier
-    output.seek(0)
+    # Créer le tableau
+    table = Table(data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1E3A8A')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('FONTSIZE', (0, 1), (-1, -1), 7),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    buffer.seek(0)
+    
     return send_file(
-        io.BytesIO(output.getvalue().encode('utf-8-sig')),
-        mimetype='text/csv',
+        buffer,
         as_attachment=True,
-        download_name=f'liste_logement_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        download_name=f'liste_logement_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
+        mimetype='application/pdf'
     )
 
-@app.route('/admin/export/bourse')
-def export_bourse():
-    """Exporter la liste des demandes de bourse en CSV"""
+@app.route('/admin/export/bourse/pdf')
+def export_bourse_pdf():
+    """Exporter la liste des demandes de bourse en PDF"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
     
-    import csv
-    from io import StringIO
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    import io
     
-    # Récupérer les demandes de bourse
+    # Récupérer les données
     bourses = StudentRequest.query.filter_by(request_type='bourse').order_by(StudentRequest.date_submitted.desc()).all()
     
-    # Créer le CSV
-    output = StringIO()
-    writer = csv.writer(output)
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=1*cm, leftMargin=1*cm, topMargin=1*cm, bottomMargin=1*cm)
+    elements = []
     
-    # En-têtes
-    writer.writerow(['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Adresse', 'Catégorie', 'Établissement', 'Statut', 'Date de soumission'])
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, alignment=1, spaceAfter=20)
     
-    # Données
+    # Titre
+    elements.append(Paragraph("Liste des demandes de bourse", title_style))
+    elements.append(Paragraph(f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}", styles['Normal']))
+    elements.append(Spacer(1, 10))
+    
+    # Données du tableau
+    data = [['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Catégorie', 'Établissement', 'Statut', 'Date']]
+    
     for req in bourses:
-        writer.writerow([
-            req.id, req.nom, req.prenom, req.email, req.telephone,
-            req.adresse, 'Étudiant' if req.categorie == 'etudiant' else 'Élève',
-            req.etablissement, req.status, req.date_submitted.strftime('%d/%m/%Y %H:%M')
+        status = "En attente" if req.status == 'pending' else ("Approuvé" if req.status == 'approved' else "Rejeté")
+        categorie = "Étudiant" if req.categorie == 'etudiant' else "Élève"
+        data.append([
+            str(req.id), req.nom, req.prenom, req.email, req.telephone,
+            categorie, req.etablissement or '-', status,
+            req.date_submitted.strftime('%d/%m/%Y')
         ])
     
-    output.seek(0)
+    # Créer le tableau
+    table = Table(data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10B981')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('FONTSIZE', (0, 1), (-1, -1), 7),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    buffer.seek(0)
+    
     return send_file(
-        io.BytesIO(output.getvalue().encode('utf-8-sig')),
-        mimetype='text/csv',
+        buffer,
         as_attachment=True,
-        download_name=f'liste_bourse_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        download_name=f'liste_bourse_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
+        mimetype='application/pdf'
     )
 
-@app.route('/admin/export/admis_logement')
-def export_admis_logement():
-    """Exporter la liste des admis au logement en CSV"""
+@app.route('/admin/export/admis_logement/pdf')
+def export_admis_logement_pdf():
+    """Exporter la liste des admis au logement en PDF"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
     
-    import csv
-    from io import StringIO
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    import io
     
-    # Récupérer les demandes de logement approuvées
+    # Récupérer les données
     admis = StudentRequest.query.filter_by(request_type='logement', status='approved').order_by(StudentRequest.nom).all()
     
-    output = StringIO()
-    writer = csv.writer(output)
-    writer.writerow(['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Adresse', 'Région', 'Date d\'approbation'])
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=1*cm, leftMargin=1*cm, topMargin=1*cm, bottomMargin=1*cm)
+    elements = []
+    
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, alignment=1, spaceAfter=20)
+    
+    # Titre
+    elements.append(Paragraph("Liste des admis - Logement", title_style))
+    elements.append(Paragraph(f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}", styles['Normal']))
+    elements.append(Spacer(1, 10))
+    
+    # Données du tableau
+    data = [['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Région', "Date d'approbation"]]
     
     for req in admis:
-        writer.writerow([
-            req.id, req.nom, req.prenom, req.email, req.telephone,
-            req.adresse, req.region_universitaire or req.etablissement,
-            req.date_processed.strftime('%d/%m/%Y') if req.date_processed else ''
+        data.append([
+            str(req.id), req.nom, req.prenom, req.email, req.telephone,
+            req.region_universitaire or '-',
+            req.date_processed.strftime('%d/%m/%Y') if req.date_processed else '-'
         ])
     
-    output.seek(0)
+    # Créer le tableau
+    table = Table(data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#F59E0B')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('FONTSIZE', (0, 1), (-1, -1), 7),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    buffer.seek(0)
+    
     return send_file(
-        io.BytesIO(output.getvalue().encode('utf-8-sig')),
-        mimetype='text/csv',
+        buffer,
         as_attachment=True,
-        download_name=f'admis_logement_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        download_name=f'admis_logement_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
+        mimetype='application/pdf'
     )
 
-@app.route('/admin/export/admis_bourse')
-def export_admis_bourse():
-    """Exporter la liste des admis à la bourse en CSV"""
+@app.route('/admin/export/admis_bourse/pdf')
+def export_admis_bourse_pdf():
+    """Exporter la liste des admis à la bourse en PDF"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
     
-    import csv
-    from io import StringIO
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    import io
     
-    # Récupérer les demandes de bourse approuvées
+    # Récupérer les données
     admis = StudentRequest.query.filter_by(request_type='bourse', status='approved').order_by(StudentRequest.nom).all()
     
-    output = StringIO()
-    writer = csv.writer(output)
-    writer.writerow(['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Adresse', 'Catégorie', 'Établissement', 'Date d\'approbation'])
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=1*cm, leftMargin=1*cm, topMargin=1*cm, bottomMargin=1*cm)
+    elements = []
+    
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, alignment=1, spaceAfter=20)
+    
+    # Titre
+    elements.append(Paragraph("Liste des admis - Bourse", title_style))
+    elements.append(Paragraph(f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}", styles['Normal']))
+    elements.append(Spacer(1, 10))
+    
+    # Données du tableau
+    data = [['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Catégorie', 'Établissement', "Date d'approbation"]]
     
     for req in admis:
-        writer.writerow([
-            req.id, req.nom, req.prenom, req.email, req.telephone,
-            req.adresse, 'Étudiant' if req.categorie == 'etudiant' else 'Élève',
-            req.etablissement, req.date_processed.strftime('%d/%m/%Y') if req.date_processed else ''
+        categorie = "Étudiant" if req.categorie == 'etudiant' else "Élève"
+        data.append([
+            str(req.id), req.nom, req.prenom, req.email, req.telephone,
+            categorie, req.etablissement or '-',
+            req.date_processed.strftime('%d/%m/%Y') if req.date_processed else '-'
         ])
     
-    output.seek(0)
+    # Créer le tableau
+    table = Table(data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#06B6D4')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('FONTSIZE', (0, 1), (-1, -1), 7),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    buffer.seek(0)
+    
     return send_file(
-        io.BytesIO(output.getvalue().encode('utf-8-sig')),
-        mimetype='text/csv',
+        buffer,
         as_attachment=True,
-        download_name=f'admis_bourse_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        download_name=f'admis_bourse_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
+        mimetype='application/pdf'
     )
 
 @app.route('/admin/debug-requests')
