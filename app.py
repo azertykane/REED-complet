@@ -1244,61 +1244,150 @@ def export_logement_pdf():
 
 @app.route('/admin/export/bourse/pdf')
 def export_bourse_pdf():
-    """Exporter la liste des demandes de bourse en PDF"""
+    """Exporter la liste des demandes de bourse en PDF (élèves et étudiants séparés)"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
     
     from reportlab.lib.pagesizes import A4
     from reportlab.lib import colors
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm
     import io
     
-    # Récupérer les données
-    bourses = StudentRequest.query.filter_by(request_type='bourse').order_by(StudentRequest.date_submitted.desc()).all()
+    # Récupérer les données séparément
+    etudiants = StudentRequest.query.filter_by(request_type='bourse', categorie='etudiant').order_by(StudentRequest.nom).all()
+    eleves = StudentRequest.query.filter_by(request_type='bourse', categorie='eleve').order_by(StudentRequest.nom).all()
     
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=1*cm, leftMargin=1*cm, topMargin=1*cm, bottomMargin=1*cm)
+    doc = SimpleDocTemplate(buffer, pagesize=A4, 
+                           rightMargin=1.5*cm, leftMargin=1.5*cm, 
+                           topMargin=1.5*cm, bottomMargin=1.5*cm)
     elements = []
     
     # Styles
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16, alignment=1, spaceAfter=20)
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], 
+                                  fontSize=18, alignment=1, spaceAfter=20, 
+                                  textColor=colors.HexColor('#1E3A8A'))
+    subtitle_style = ParagraphStyle('Subtitle', parent=styles['Heading2'], 
+                                     fontSize=14, alignment=1, spaceAfter=15)
+    stats_style = ParagraphStyle('Stats', parent=styles['Normal'], 
+                                  fontSize=11, alignment=0, spaceAfter=8)
     
-    # Titre
-    elements.append(Paragraph("Liste des demandes de bourse", title_style))
-    elements.append(Paragraph(f"Généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}", styles['Normal']))
+    date_str = datetime.now().strftime('%d/%m/%Y à %H:%M')
+    total = len(etudiants) + len(eleves)
+    
+    # ==================== PAGE 1 : RÉSUMÉ ====================
+    elements.append(Paragraph("Rapport des demandes de bourse", title_style))
+    elements.append(Paragraph(f"Généré le {date_str}", styles['Normal']))
+    elements.append(Spacer(1, 15))
+    
+    # Résumé statistique
+    elements.append(Paragraph("Résumé des demandes", styles['Heading2']))
     elements.append(Spacer(1, 10))
     
-    # Données du tableau
-    data = [['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Catégorie', 'Établissement', 'Statut', 'Date']]
+    # Tableau récapitulatif
+    summary_data = [
+        ['Catégorie', 'Total', 'En attente', 'Approuvés', 'Rejetés'],
+        ['Étudiants', str(len(etudiants)), 
+         str(len([e for e in etudiants if e.status == 'pending'])),
+         str(len([e for e in etudiants if e.status == 'approved'])),
+         str(len([e for e in etudiants if e.status == 'rejected']))],
+        ['Élèves', str(len(eleves)),
+         str(len([e for e in eleves if e.status == 'pending'])),
+         str(len([e for e in eleves if e.status == 'approved'])),
+         str(len([e for e in eleves if e.status == 'rejected']))],
+        ['Total', str(total),
+         str(len([r for r in etudiants+eleves if r.status == 'pending'])),
+         str(len([r for r in etudiants+eleves if r.status == 'approved'])),
+         str(len([r for r in etudiants+eleves if r.status == 'rejected']))]
+    ]
     
-    for req in bourses:
-        status = "En attente" if req.status == 'pending' else ("Approuvé" if req.status == 'approved' else "Rejeté")
-        categorie = "Étudiant" if req.categorie == 'etudiant' else "Élève"
-        data.append([
-            str(req.id), req.nom, req.prenom, req.email, req.telephone,
-            categorie, req.etablissement or '-', status,
-            req.date_submitted.strftime('%d/%m/%Y')
-        ])
-    
-    # Créer le tableau
-    table = Table(data, repeatRows=1)
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10B981')),
+    summary_table = Table(summary_data, colWidths=[4*cm, 2*cm, 2.5*cm, 2.5*cm, 2.5*cm])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1E3A8A')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BACKGROUND', (0, 1), (-1, -2), colors.beige),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#E5E7EB')),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('FONTSIZE', (0, 1), (-1, -1), 7),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
     ]))
     
-    elements.append(table)
+    elements.append(summary_table)
+    elements.append(Spacer(1, 20))
+    
+    # ==================== PAGE 2 : ÉTUDIANTS ====================
+    elements.append(PageBreak())
+    elements.append(Paragraph("Demandes de bourse - Étudiants", subtitle_style))
+    elements.append(Spacer(1, 10))
+    
+    if etudiants:
+        data = [['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Établissement', 'Statut', 'Date']]
+        for req in etudiants:
+            status = "En attente" if req.status == 'pending' else ("Approuvé" if req.status == 'approved' else "Rejeté")
+            data.append([
+                str(req.id), req.nom, req.prenom, req.email, req.telephone,
+                req.etablissement or '-', status,
+                req.date_submitted.strftime('%d/%m/%Y')
+            ])
+        
+        table = Table(data, repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10B981')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph(f"Total : {len(etudiants)} étudiant(s)", styles['Normal']))
+    else:
+        elements.append(Paragraph("Aucune demande de bourse pour les étudiants.", styles['Normal']))
+    
+    # ==================== PAGE 3 : ÉLÈVES ====================
+    elements.append(PageBreak())
+    elements.append(Paragraph("Demandes de bourse - Élèves", subtitle_style))
+    elements.append(Spacer(1, 10))
+    
+    if eleves:
+        data = [['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Établissement', 'Statut', 'Date']]
+        for req in eleves:
+            status = "En attente" if req.status == 'pending' else ("Approuvé" if req.status == 'approved' else "Rejeté")
+            data.append([
+                str(req.id), req.nom, req.prenom, req.email, req.telephone,
+                req.etablissement or '-', status,
+                req.date_submitted.strftime('%d/%m/%Y')
+            ])
+        
+        table = Table(data, repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#F59E0B')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph(f"Total : {len(eleves)} élève(s)", styles['Normal']))
+    else:
+        elements.append(Paragraph("Aucune demande de bourse pour les élèves.", styles['Normal']))
+    
     doc.build(elements)
     buffer.seek(0)
     
