@@ -150,7 +150,10 @@ def index():
 @app.route('/information')
 def information():
     return render_template('information.html')
-
+@app.route('/bourse/success')
+def bourse_success():
+    """Page de confirmation après soumission de la demande de bourse"""
+    return render_template('bourse_success.html')
 # CORRECTION: Route formulaire logement avec vérification ouverture/fermeture
 @app.route('/formulaire', methods=['GET', 'POST'])
 def formulaire():
@@ -1086,7 +1089,7 @@ def formulaire_bourse():
                 print(f"Erreur programmation email: {email_error}")
             
             flash('Votre demande de bourse a été soumise avec succès!', 'success')
-            return redirect(url_for('index'))
+            return redirect(url_for('bourse_success'))
             
         except Exception as e:
             db.session.rollback()
