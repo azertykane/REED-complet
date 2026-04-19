@@ -1168,6 +1168,30 @@ def admin_application_status():
                          logement_pending=logement_pending,
                          bourse_pending=bourse_pending)
 
+
+@app.route('/admin/debug-requests')
+def debug_requests():
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    
+    from database import StudentRequest
+    requests = StudentRequest.query.order_by(StudentRequest.date_submitted.desc()).limit(10).all()
+    
+    result = []
+    for r in requests:
+        result.append({
+            'id': r.id,
+            'nom': r.nom,
+            'prenom': r.prenom,
+            'categorie': r.categorie,
+            'request_type': r.request_type,
+            'date': str(r.date_submitted),
+            'has_demande_manuscrite': bool(r.demande_manuscrite),
+            'has_certificat_residence': bool(r.certificat_residence),
+            'has_carte_membre_reed': bool(r.carte_membre_reed)
+        })
+    
+    return jsonify(result)
 # Gestion des erreurs
 @app.errorhandler(404)
 def page_not_found(e):
