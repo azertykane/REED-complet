@@ -150,6 +150,7 @@ def index():
 @app.route('/information')
 def information():
     return render_template('information.html')
+
 # CORRECTION: Route formulaire logement avec vérification ouverture/fermeture
 @app.route('/formulaire', methods=['GET', 'POST'])
 def formulaire():
@@ -979,6 +980,10 @@ def admis():
     except Exception as e:
         return f"Erreur lors du chargement des données : {str(e)}", 500
 
+@app.route('/bourse_info')
+def bourse_info_page():
+    """Page d'information après soumission de la demande de bourse"""
+    return render_template('bourse_info.html')
 # CORRECTION: Route bourse - redirige vers formulaire si ouvert, sinon page fermée
 @app.route('/bourse')
 def bourse_info():
