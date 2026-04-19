@@ -204,7 +204,36 @@
             </a>
         </div>
     </div>
-
+    <!-- Section Exports -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="filter-card">
+            <h6 class="fw-bold mb-3"><i class="fas fa-download me-2 text-primary"></i>Exporter les données</h6>
+            <div class="row g-2">
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ url_for('export_logement') }}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-home me-2"></i>Liste logement
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ url_for('export_bourse') }}" class="btn btn-outline-success w-100">
+                        <i class="fas fa-graduation-cap me-2"></i>Liste bourse
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ url_for('export_admis_logement') }}" class="btn btn-outline-warning w-100">
+                        <i class="fas fa-check-circle me-2"></i>Admis logement
+                    </a>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <a href="{{ url_for('export_admis_bourse') }}" class="btn btn-outline-info w-100">
+                        <i class="fas fa-trophy me-2"></i>Admis bourse
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     <!-- Cartes statistiques -->
     <div class="row g-4 mb-4">
         <div class="col-xl-3 col-md-6">

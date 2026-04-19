@@ -1168,6 +1168,138 @@ def admin_application_status():
                          logement_pending=logement_pending,
                          bourse_pending=bourse_pending)
 
+@app.route('/admin/export/logement')
+def export_logement():
+    """Exporter la liste des demandes de logement en CSV"""
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    
+    import csv
+    from io import StringIO
+    
+    # Récupérer les demandes de logement
+    logements = StudentRequest.query.filter_by(request_type='logement').order_by(StudentRequest.date_submitted.desc()).all()
+    
+    # Créer le CSV
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # En-têtes
+    writer.writerow(['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Adresse', 'Région', 'Statut', 'Date de soumission'])
+    
+    # Données
+    for req in logements:
+        writer.writerow([
+            req.id, req.nom, req.prenom, req.email, req.telephone,
+            req.adresse, req.region_universitaire or req.etablissement,
+            req.status, req.date_submitted.strftime('%d/%m/%Y %H:%M')
+        ])
+    
+    # Envoyer le fichier
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'liste_logement_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    )
+
+@app.route('/admin/export/bourse')
+def export_bourse():
+    """Exporter la liste des demandes de bourse en CSV"""
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    
+    import csv
+    from io import StringIO
+    
+    # Récupérer les demandes de bourse
+    bourses = StudentRequest.query.filter_by(request_type='bourse').order_by(StudentRequest.date_submitted.desc()).all()
+    
+    # Créer le CSV
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # En-têtes
+    writer.writerow(['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Adresse', 'Catégorie', 'Établissement', 'Statut', 'Date de soumission'])
+    
+    # Données
+    for req in bourses:
+        writer.writerow([
+            req.id, req.nom, req.prenom, req.email, req.telephone,
+            req.adresse, 'Étudiant' if req.categorie == 'etudiant' else 'Élève',
+            req.etablissement, req.status, req.date_submitted.strftime('%d/%m/%Y %H:%M')
+        ])
+    
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'liste_bourse_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    )
+
+@app.route('/admin/export/admis_logement')
+def export_admis_logement():
+    """Exporter la liste des admis au logement en CSV"""
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    
+    import csv
+    from io import StringIO
+    
+    # Récupérer les demandes de logement approuvées
+    admis = StudentRequest.query.filter_by(request_type='logement', status='approved').order_by(StudentRequest.nom).all()
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Adresse', 'Région', 'Date d\'approbation'])
+    
+    for req in admis:
+        writer.writerow([
+            req.id, req.nom, req.prenom, req.email, req.telephone,
+            req.adresse, req.region_universitaire or req.etablissement,
+            req.date_processed.strftime('%d/%m/%Y') if req.date_processed else ''
+        ])
+    
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'admis_logement_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    )
+
+@app.route('/admin/export/admis_bourse')
+def export_admis_bourse():
+    """Exporter la liste des admis à la bourse en CSV"""
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    
+    import csv
+    from io import StringIO
+    
+    # Récupérer les demandes de bourse approuvées
+    admis = StudentRequest.query.filter_by(request_type='bourse', status='approved').order_by(StudentRequest.nom).all()
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Adresse', 'Catégorie', 'Établissement', 'Date d\'approbation'])
+    
+    for req in admis:
+        writer.writerow([
+            req.id, req.nom, req.prenom, req.email, req.telephone,
+            req.adresse, 'Étudiant' if req.categorie == 'etudiant' else 'Élève',
+            req.etablissement, req.date_processed.strftime('%d/%m/%Y') if req.date_processed else ''
+        ])
+    
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'admis_bourse_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    )
 
 @app.route('/admin/debug-requests')
 def debug_requests():

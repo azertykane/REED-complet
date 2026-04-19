@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Demande de Bourse - REED{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-bourse {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 4rem 0;
+        color: white;
+        text-align: center;
+    }
+    .redirect-card {
+        background: white;
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        margin-top: -2rem;
+        text-align: center;
+    }
+    .btn-bourse {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+    .btn-bourse:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    .info-list {
+        text-align: left;
+        max-width: 500px;
+        margin: 2rem auto;
+    }
+    .info-list li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-bourse">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3">Demande de Bourse</h1>
+        <p class="lead mb-0">Accompagnement financier pour votre réussite</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="redirect-card">
+        <div class="mb-4">
+            <i class="fas fa-graduation-cap fa-4x" style="color: #667eea;"></i>
+        </div>
+        
+        <h2 class="fw-bold mb-3">Prêt à faire votre demande ?</h2>
+        <p class="text-muted mb-4">Remplissez le formulaire ci-dessous pour soumettre votre demande de bourse</p>
+        
+        <a href="{{ url_for('formulaire_bourse') }}" class="btn btn-bourse text-white">
+            <i class="fas fa-paper-plane me-2"></i>Commencer ma demande
+        </a>
+        
+        <div class="info-list mt-5">
+            <h5 class="fw-bold mb-3"><i class="fas fa-file-alt me-2 text-primary"></i>Documents requis</h5>
+            <ul class="list-unstyled">
+                <li><i class="fas fa-check-circle text-success me-2"></i> Demande manuscrite adressée au Maire</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i> Certificat de scolarité ou carte étudiant</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i> Certificat de résidence</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i> Carte membre REED</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i> Bulletin 2ème semestre (pour élèves)</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
