@@ -160,9 +160,9 @@ def formulaire():
     
     # Si formulaire fermé, afficher la page "fermé"
     if not logement_open:
-        return render_template('form.html')  # Page avec message "Inscriptions Closes"
+        return render_template('form.html')
     
-    # Sinon, traiter le formulaire normalement
+    # Traiter le formulaire normalement
     if request.method == 'POST':
         try:
             nom = request.form.get('nom', '').strip()
@@ -170,9 +170,11 @@ def formulaire():
             adresse = request.form.get('adresse', '').strip()
             telephone = request.form.get('telephone', '').strip()
             email = request.form.get('email', '').strip().lower()
-            region_universitaire = request.form.get('region_universitaire', 'Dakar').strip()
             
-            if not all([nom, prenom, adresse, telephone, email, region_universitaire]):
+            # Ne plus utiliser region_universitaire - utiliser etablissement à la place
+            etablissement = request.form.get('region_universitaire', 'Dakar').strip()
+            
+            if not all([nom, prenom, adresse, telephone, email, etablissement]):
                 flash('Tous les champs sont obligatoires', 'error')
                 return redirect(url_for('formulaire'))
             
@@ -184,17 +186,19 @@ def formulaire():
                 flash('Numéro de téléphone invalide', 'error')
                 return redirect(url_for('formulaire'))
             
+            # CRÉATION - sans region_universitaire
             new_request = StudentRequest(
                 nom=nom,
                 prenom=prenom,
                 adresse=adresse,
                 telephone=telephone,
                 email=email,
-                region_universitaire=region_universitaire,
+                etablissement=etablissement,  # Utiliser etablissement au lieu de region_universitaire
                 request_type='logement',
                 status='pending'
             )
             
+            # Fichiers requis pour le logement
             files_required = {
                 'certificat_inscription': 'certificat_inscription',
                 'certificat_residence': 'certificat_residence', 
@@ -203,6 +207,7 @@ def formulaire():
                 'copie_cni': 'copie_cni'
             }
             
+            # Vérifier tous les fichiers
             for field, file_key in files_required.items():
                 file = request.files.get(file_key)
                 if not file or file.filename == '':
@@ -216,6 +221,7 @@ def formulaire():
             db.session.add(new_request)
             db.session.flush()
             
+            # Sauvegarder les fichiers
             for field, file_key in files_required.items():
                 file = request.files.get(file_key)
                 if file and file.filename and allowed_file(file.filename):
@@ -238,6 +244,8 @@ def formulaire():
         except Exception as e:
             db.session.rollback()
             print(f"Erreur lors de la soumission: {str(e)}")
+            import traceback
+            traceback.print_exc()
             flash('Une erreur est survenue. Veuillez réessayer.', 'error')
             return redirect(url_for('formulaire'))
     
