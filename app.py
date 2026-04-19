@@ -20,7 +20,44 @@ app.config.from_object(Config)
 
 # Initialize database
 db.init_app(app)
+def ensure_database_columns():
+    """Vérifie et ajoute les colonnes manquantes au démarrage"""
+    try:
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        
+        if 'student_request' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('student_request')]
+            
+            with db.engine.connect() as conn:
+                if 'region_universitaire' not in columns:
+                    conn.execute(text('ALTER TABLE student_request ADD COLUMN region_universitaire VARCHAR(100) DEFAULT "Dakar"'))
+                    print("✓ Colonne region_universitaire ajoutée")
+                
+                if 'categorie' not in columns:
+                    conn.execute(text('ALTER TABLE student_request ADD COLUMN categorie VARCHAR(20) DEFAULT "etudiant"'))
+                    print("✓ Colonne categorie ajoutée")
+                
+                if 'etablissement' not in columns:
+                    conn.execute(text('ALTER TABLE student_request ADD COLUMN etablissement VARCHAR(200) DEFAULT ""'))
+                    print("✓ Colonne etablissement ajoutée")
+                
+                if 'bulletin_s2' not in columns:
+                    conn.execute(text('ALTER TABLE student_request ADD COLUMN bulletin_s2 VARCHAR(300)'))
+                    print("✓ Colonne bulletin_s2 ajoutée")
+                
+                if 'request_type' not in columns:
+                    conn.execute(text('ALTER TABLE student_request ADD COLUMN request_type VARCHAR(20) DEFAULT "logement"'))
+                    print("✓ Colonne request_type ajoutée")
+                
+                conn.commit()
+    except Exception as e:
+        print(f"Note: {e}")
 
+# Appeler la fonction
+with app.app_context():
+    db.create_all()
+    ensure_database_columns()
 # Create necessary directories
 upload_folder = app.config['UPLOAD_FOLDER']
 os.makedirs('static/uploads', exist_ok=True)
@@ -269,31 +306,47 @@ def admin_dashboard():
         approved_count = StudentRequest.query.filter_by(status='approved').count()
         rejected_count = StudentRequest.query.filter_by(status='rejected').count()
         
-        regions_stats = {}
-        regions = StudentRequest.query.with_entities(
-            StudentRequest.region_universitaire,
-            db.func.count(StudentRequest.id).label('count')
-        ).group_by(StudentRequest.region_universitaire).all()
+        # Statistiques par type de demande
+        logement_count = StudentRequest.query.filter_by(request_type='logement').count()
+        bourse_count = StudentRequest.query.filter_by(request_type='bourse').count()
         
-        for region, count in regions:
-            regions_stats[region] = count
+        # Statistiques par catégorie pour les bourses
+        bourse_etudiant_count = StudentRequest.query.filter_by(request_type='bourse', categorie='etudiant').count()
+        bourse_eleve_count = StudentRequest.query.filter_by(request_type='bourse', categorie='eleve').count()
+        
+        # Statistiques par établissement (région pour logement)
+        regions_stats = {}
+        logement_requests = StudentRequest.query.filter_by(request_type='logement').all()
+        for req in logement_requests:
+            if hasattr(req, 'region_universitaire') and req.region_universitaire:
+                regions_stats[req.region_universitaire] = regions_stats.get(req.region_universitaire, 0) + 1
         
         return render_template('admin_dashboard.html', 
                              requests=requests,
                              pending_count=pending_count,
                              approved_count=approved_count,
                              rejected_count=rejected_count,
-                             regions_stats=regions_stats)
+                             regions_stats=regions_stats,
+                             logement_count=logement_count,
+                             bourse_count=bourse_count,
+                             bourse_etudiant_count=bourse_etudiant_count,
+                             bourse_eleve_count=bourse_eleve_count)
         
     except Exception as e:
         print(f"Erreur dashboard: {str(e)}")
+        import traceback
+        traceback.print_exc()
         flash('Erreur de chargement du tableau de bord', 'error')
         return render_template('admin_dashboard.html', 
                              requests=[],
                              pending_count=0,
                              approved_count=0,
                              rejected_count=0,
-                             regions_stats={})
+                             regions_stats={},
+                             logement_count=0,
+                             bourse_count=0,
+                             bourse_etudiant_count=0,
+                             bourse_eleve_count=0)
 
 @app.route('/admin/view/<int:request_id>')
 def view_request(request_id):

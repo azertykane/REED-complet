@@ -4,171 +4,302 @@
 
 {% block extra_css %}
 <style>
-    .stat-card {
-        transition: transform 0.3s;
-        border: none;
-        border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    :root {
+        --primary-blue: #1E3A8A;
+        --secondary-blue: #3B82F6;
+        --primary-yellow: #FBBF24;
+        --success-green: #10B981;
+        --danger-red: #EF4444;
+        --warning-orange: #F59E0B;
+        --info-cyan: #06B6D4;
+        --dark-gray: #1F2937;
+        --light-gray: #F3F4F6;
     }
+    
+    * {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    /* Cartes statistiques */
+    .stat-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        border-radius: 20px;
+        background: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue));
+    }
+    
     .stat-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
-    .request-item {
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-    .request-item:hover {
-        background-color: #f8f9fa;
-    }
-    .status-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-    .action-buttons .btn {
-        padding: 4px 8px;
-        font-size: 12px;
-    }
-    .table th {
-        font-weight: 600;
-        color: #495057;
-        background-color: #f8f9fa;
-        border-bottom: 2px solid #dee2e6;
-    }
-    .avatar-circle {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+    
+    .stat-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 15px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
-        font-size: 14px;
-    }
-    .icon-wrapper {
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .nav-tabs .nav-link {
-        color: #495057;
-        font-weight: 500;
-        border: none;
-        border-bottom: 3px solid transparent;
         transition: all 0.3s ease;
     }
-    .nav-tabs .nav-link:hover {
-        border-bottom-color: #cbd5e1;
+    
+    .stat-card:hover .stat-icon {
+        transform: scale(1.1) rotate(5deg);
     }
-    .nav-tabs .nav-link.active {
+    
+    /* Badges de statut */
+    .status-badge {
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .status-pending { background: #FEF3C7; color: #D97706; }
+    .status-approved { background: #D1FAE5; color: #059669; }
+    .status-rejected { background: #FEE2E2; color: #DC2626; }
+    
+    /* Onglets améliorés */
+    .nav-tabs-custom {
+        border-bottom: 2px solid #E5E7EB;
+        gap: 0.5rem;
+    }
+    
+    .nav-tabs-custom .nav-link {
+        border: none;
+        padding: 12px 24px;
+        font-weight: 600;
+        color: #6B7280;
+        border-radius: 12px 12px 0 0;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .nav-tabs-custom .nav-link:hover {
         color: var(--primary-blue);
-        border-bottom-color: var(--primary-blue);
-        background: transparent;
+        background: #EFF6FF;
     }
+    
+    .nav-tabs-custom .nav-link.active {
+        color: var(--primary-blue);
+        background: white;
+    }
+    
+    .nav-tabs-custom .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary-blue);
+        border-radius: 3px;
+    }
+    
+    .nav-tabs-custom .badge-count {
+        margin-left: 8px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    /* Tableaux */
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .data-table thead th {
+        background: #F9FAFB;
+        padding: 14px 16px;
+        font-weight: 600;
+        font-size: 13px;
+        color: #374151;
+        border-bottom: 2px solid #E5E7EB;
+        white-space: nowrap;
+    }
+    
+    .data-table tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #F3F4F6;
+        vertical-align: middle;
+        font-size: 13px;
+    }
+    
+    .data-table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .data-table tbody tr:hover {
+        background: #F9FAFB;
+        transform: scale(1.01);
+    }
+    
+    /* Cartes de filtres */
+    .filter-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        border: 1px solid #E5E7EB;
+    }
+    
+    /* Avatar */
+    .student-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+    }
+    
+    /* Boutons d'action */
+    .action-btn {
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        transition: all 0.2s ease;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Badge catégorie */
     .category-badge {
         padding: 4px 10px;
         border-radius: 20px;
         font-size: 11px;
         font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
-    .filter-bar {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 20px;
+    
+    .category-etudiant { background: #E0F2FE; color: #0284C7; }
+    .category-eleve { background: #FEF3C7; color: #D97706; }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.4s ease-out;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .data-table thead { display: none; }
+        .data-table tbody tr { display: block; margin-bottom: 16px; border: 1px solid #E5E7EB; border-radius: 12px; }
+        .data-table tbody td { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid #F3F4F6; }
+        .data-table tbody td::before { content: attr(data-label); font-weight: 600; font-size: 12px; color: #6B7280; }
+        .action-buttons { justify-content: flex-end; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-            <h1 class="h2 mb-1">
-                <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord Administrateur
+            <h1 class="display-6 fw-bold mb-1" style="color: var(--primary-blue);">
+                <i class="fas fa-chalkboard-user me-3"></i>Tableau de bord
             </h1>
-            <p class="text-muted mb-0">Gestion des demandes de logement et de bourse</p>
+            <p class="text-muted mb-0">Gestion centralisée des demandes de logement et de bourse</p>
         </div>
-        <div class="btn-group">
-            <a href="{{ url_for('admin_application_status') }}" class="btn btn-info">
-                <i class="fas fa-toggle-on me-2"></i>Gérer ouvertures
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin_application_status') }}" class="btn btn-info shadow-sm">
+                <i class="fas fa-toggle-on me-2"></i>Gérer les ouvertures
             </a>
-            <a href="{{ url_for('download_report') }}" class="btn btn-primary">
-                <i class="fas fa-download me-2"></i>Rapport PDF
+            <a href="{{ url_for('download_report') }}" class="btn btn-primary shadow-sm">
+                <i class="fas fa-file-pdf me-2"></i>Exporter PDF
             </a>
-            <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger">
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger shadow-sm">
                 <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
             </a>
         </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stat-card border-warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title text-warning">En attente</h6>
-                            <h2 class="mb-0" id="statPending">{{ pending_count }}</h2>
-                            <small class="text-muted">Demandes non traitées</small>
-                        </div>
-                        <div class="icon-wrapper bg-warning bg-opacity-10 p-3 rounded-circle">
-                            <i class="fas fa-clock fa-2x text-warning"></i>
-                        </div>
+    <!-- Cartes statistiques -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">En attente</span>
+                        <h2 class="mt-2 mb-0 fw-bold" style="color: var(--warning-orange);">{{ pending_count }}</h2>
+                        <small class="text-muted">Demandes à traiter</small>
+                    </div>
+                    <div class="stat-icon bg-warning bg-opacity-10">
+                        <i class="fas fa-clock fa-2x text-warning"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stat-card border-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title text-success">Approuvées</h6>
-                            <h2 class="mb-0" id="statApproved">{{ approved_count }}</h2>
-                            <small class="text-muted">Demandes acceptées</small>
-                        </div>
-                        <div class="icon-wrapper bg-success bg-opacity-10 p-3 rounded-circle">
-                            <i class="fas fa-check-circle fa-2x text-success"></i>
-                        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Approuvées</span>
+                        <h2 class="mt-2 mb-0 fw-bold" style="color: var(--success-green);">{{ approved_count }}</h2>
+                        <small class="text-muted">Demandes acceptées</small>
+                    </div>
+                    <div class="stat-icon bg-success bg-opacity-10">
+                        <i class="fas fa-check-circle fa-2x text-success"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stat-card border-danger">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title text-danger">Rejetées</h6>
-                            <h2 class="mb-0" id="statRejected">{{ rejected_count }}</h2>
-                            <small class="text-muted">Demandes refusées</small>
-                        </div>
-                        <div class="icon-wrapper bg-danger bg-opacity-10 p-3 rounded-circle">
-                            <i class="fas fa-times-circle fa-2x text-danger"></i>
-                        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Rejetées</span>
+                        <h2 class="mt-2 mb-0 fw-bold" style="color: var(--danger-red);">{{ rejected_count }}</h2>
+                        <small class="text-muted">Demandes refusées</small>
+                    </div>
+                    <div class="stat-icon bg-danger bg-opacity-10">
+                        <i class="fas fa-times-circle fa-2x text-danger"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stat-card border-primary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title text-primary">Total</h6>
-                            <h2 class="mb-0" id="statTotal">{{ requests|length }}</h2>
-                            <small class="text-muted">Toutes les demandes</small>
-                        </div>
-                        <div class="icon-wrapper bg-primary bg-opacity-10 p-3 rounded-circle">
-                            <i class="fas fa-users fa-2x text-primary"></i>
-                        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Total</span>
+                        <h2 class="mt-2 mb-0 fw-bold" style="color: var(--primary-blue);">{{ requests|length }}</h2>
+                        <small class="text-muted">Toutes demandes confondues</small>
+                    </div>
+                    <div class="stat-icon bg-primary bg-opacity-10">
+                        <i class="fas fa-users fa-2x text-primary"></i>
                     </div>
                 </div>
             </div>
@@ -176,231 +307,236 @@
     </div>
 
     <!-- Statistiques détaillées -->
-    <div class="row mb-4">
-        <div class="col-md-6 mb-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0">
-                    <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Répartition par type de demande</h6>
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="filter-card h-100">
+                <h6 class="fw-bold mb-3"><i class="fas fa-chart-pie me-2 text-primary"></i>Répartition par type de demande</h6>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="text-center p-3 bg-light rounded-3">
+                            <i class="fas fa-home fa-2x text-primary mb-2"></i>
+                            <h3 class="fw-bold mb-0">{{ logement_count|default(0) }}</h3>
+                            <small class="text-muted">Demandes de logement</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center p-3 bg-light rounded-3">
+                            <i class="fas fa-graduation-cap fa-2x text-success mb-2"></i>
+                            <h3 class="fw-bold mb-0">{{ bourse_count|default(0) }}</h3>
+                            <small class="text-muted">Demandes de bourse</small>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <i class="fas fa-home fa-2x text-primary mb-2"></i>
-                                <h5 class="mb-0">{{ logement_count|default(0) }}</h5>
-                                <small class="text-muted">Demandes de logement</small>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <i class="fas fa-graduation-cap fa-2x text-success mb-2"></i>
-                                <h5 class="mb-0">{{ bourse_count|default(0) }}</h5>
-                                <small class="text-muted">Demandes de bourse</small>
-                            </div>
+                {% if bourse_count|default(0) > 0 %}
+                <div class="mt-3 pt-2 border-top">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-university me-1 text-info"></i> Étudiants</span>
+                        <span class="fw-bold">{{ bourse_etudiant_count|default(0) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span><i class="fas fa-graduation-cap me-1 text-warning"></i> Élèves</span>
+                        <span class="fw-bold">{{ bourse_eleve_count|default(0) }}</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="filter-card h-100">
+                <h6 class="fw-bold mb-3"><i class="fas fa-map-marker-alt me-2 text-primary"></i>Répartition géographique</h6>
+                <div class="row g-2">
+                    {% for region, count in regions_stats.items() %}
+                    <div class="col-md-4 col-sm-6">
+                        <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                            <span class="small text-truncate" style="max-width: 100px;">{{ region }}</span>
+                            <span class="badge bg-primary rounded-pill">{{ count }}</span>
                         </div>
                     </div>
-                    {% if bourse_count > 0 %}
-                    <div class="row mt-3 text-center">
-                        <div class="col-6">
-                            <div class="p-2 bg-info bg-opacity-10 rounded">
-                                <i class="fas fa-university me-1"></i>
-                                <strong>{{ bourse_etudiant_count|default(0) }}</strong>
-                                <small>Étudiants</small>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-2 bg-warning bg-opacity-10 rounded">
-                                <i class="fas fa-graduation-cap me-1"></i>
-                                <strong>{{ bourse_eleve_count|default(0) }}</strong>
-                                <small>Élèves</small>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
+                    {% else %}
+                    <div class="col-12 text-center text-muted py-3">Aucune donnée disponible</div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
-        <div class="col-md-6 mb-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0">
-                    <h6 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Répartition par région</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        {% for region, count in regions_stats.items() %}
-                        <div class="col-md-4 col-sm-6 mb-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="small text-muted">{{ region[:15] }}</span>
-                                <span class="badge bg-primary">{{ count }}</span>
-                            </div>
-                        </div>
-                        {% else %}
-                        <div class="col-12 text-center text-muted">Aucune donnée</div>
-                        {% endfor %}
-                    </div>
-                </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="filter-card mb-4">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-sm btn-outline-success" onclick="selectAllVisible()">
+                    <i class="fas fa-check-double me-1"></i>Tout sélectionner
+                </button>
+                <button class="btn btn-sm btn-outline-warning" onclick="bulkUpdateStatus('pending')">
+                    <i class="fas fa-clock me-1"></i>Mettre en attente
+                </button>
+                <button class="btn btn-sm btn-outline-success" onclick="bulkUpdateStatus('approved')">
+                    <i class="fas fa-check me-1"></i>Approuver
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="bulkUpdateStatus('rejected')">
+                    <i class="fas fa-times me-1"></i>Rejeter
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="bulkDelete()">
+                    <i class="fas fa-trash me-1"></i>Supprimer
+                </button>
+                <button class="btn btn-sm btn-outline-primary" onclick="exportSelectedToCSV()">
+                    <i class="fas fa-file-excel me-1"></i>Exporter CSV
+                </button>
+            </div>
+            <div class="text-muted small">
+                <i class="fas fa-info-circle me-1"></i>
+                <span id="selectedCount">0</span> sélectionné(s)
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filter-card mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Filtrer par statut</label>
+                <select class="form-select form-select-sm" id="statusFilter">
+                    <option value="all">Tous les statuts</option>
+                    <option value="pending">En attente</option>
+                    <option value="approved">Approuvé</option>
+                    <option value="rejected">Rejeté</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Filtrer par type</label>
+                <select class="form-select form-select-sm" id="typeFilter">
+                    <option value="all">Tous les types</option>
+                    <option value="logement">Logement</option>
+                    <option value="bourse">Bourse</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold">Rechercher</label>
+                <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Nom, prénom, email...">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-secondary btn-sm w-100" onclick="resetFilters()">
+                    <i class="fas fa-undo-alt me-1"></i>Réinitialiser
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Onglets de navigation -->
-    <div class="row mb-3">
-        <div class="col-12">
-            <ul class="nav nav-tabs" id="requestTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
-                        <i class="fas fa-list me-2"></i>Toutes les demandes
-                        <span class="badge bg-secondary ms-1">{{ requests|length }}</span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="logement-tab" data-bs-toggle="tab" data-bs-target="#logement" type="button" role="tab">
-                        <i class="fas fa-home me-2"></i>Logement
-                        <span class="badge bg-primary ms-1">{{ logement_count|default(0) }}</span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="bourse-tab" data-bs-toggle="tab" data-bs-target="#bourse" type="button" role="tab">
-                        <i class="fas fa-graduation-cap me-2"></i>Bourse
-                        <span class="badge bg-success ms-1">{{ bourse_count|default(0) }}</span>
-                    </button>
-                </li>
-            </ul>
-        </div>
-    </div>
+    <ul class="nav nav-tabs-custom mb-3" id="requestTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                <i class="fas fa-list me-2"></i>Toutes
+                <span class="badge-count bg-secondary bg-opacity-10 text-secondary">{{ requests|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#logement" type="button" role="tab">
+                <i class="fas fa-home me-2"></i>Logement
+                <span class="badge-count bg-primary bg-opacity-10 text-primary">{{ logement_count|default(0) }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#bourse" type="button" role="tab">
+                <i class="fas fa-graduation-cap me-2"></i>Bourse
+                <span class="badge-count bg-success bg-opacity-10 text-success">{{ bourse_count|default(0) }}</span>
+            </button>
+        </li>
+    </ul>
 
     <!-- Contenu des onglets -->
     <div class="tab-content">
-        <!-- ==================== ONGLET TOUTES LES DEMANDES ==================== -->
+        <!-- Onglet : Toutes les demandes -->
         <div class="tab-pane fade show active" id="all" role="tabpanel">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <h5 class="mb-0">
-                            <i class="fas fa-list me-2"></i>Liste complète des demandes
-                        </h5>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-success" onclick="selectAll()">
-                                <i class="fas fa-check-double me-1"></i>Tout sélectionner
-                            </button>
-                            <button class="btn btn-outline-warning" onclick="updateSelected('pending')">
-                                <i class="fas fa-clock me-1"></i>En attente
-                            </button>
-                            <button class="btn btn-outline-success" onclick="updateSelected('approved')">
-                                <i class="fas fa-check me-1"></i>Approuver
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="updateSelected('rejected')">
-                                <i class="fas fa-times me-1"></i>Rejeter
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="deleteSelected()">
-                                <i class="fas fa-trash me-1"></i>Supprimer
-                            </button>
-                            <button class="btn btn-outline-primary" onclick="exportSelected()">
-                                <i class="fas fa-file-export me-1"></i>Exporter CSV
-                            </button>
-                            <a href="#emailModal" class="btn btn-outline-info" data-bs-toggle="modal">
-                                <i class="fas fa-envelope me-1"></i>Email
-                            </a>
-                        </div>
-                    </div>
-                </div>
+            <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="allRequestsTable">
-                            <thead class="table-light">
+                        <table class="data-table" id="allTable">
+                            <thead>
                                 <tr>
-                                    <th width="40"><input type="checkbox" id="selectAllAll" onchange="toggleSelectAllAll(this)"></th>
+                                    <th width="40"><input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)"></th>
                                     <th>ID</th>
                                     <th>Type</th>
                                     <th>Catégorie</th>
-                                    <th>Étudiant</th>
+                                    <th>Demandeur</th>
                                     <th>Contact</th>
-                                    <th>Établissement/Région</th>
+                                    <th>Localisation</th>
                                     <th>Statut</th>
                                     <th>Date</th>
-                                    <th>Actions</th>
+                                    <th width="120">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for req in requests %}
-                                <tr data-id="{{ req.id }}" data-status="{{ req.status }}" data-type="{{ req.request_type }}" 
-                                    data-categorie="{{ req.categorie if req.categorie else '' }}"
-                                    data-date="{{ req.date_submitted.strftime('%Y-%m-%d') }}"
-                                    data-search="{{ req.nom|lower }} {{ req.prenom|lower }} {{ req.email|lower }} {{ req.telephone }}">
-                                    <tr>
-                                        <td><input type="checkbox" class="request-checkbox" value="{{ req.id }}" 
-                                                   data-name="{{ req.prenom }} {{ req.nom }}" data-email="{{ req.email }}"></td>
-                                    </td>
-                                    <td><span class="fw-semibold">#{{ req.id }}</span></td>
-                                    <td>
+                                <tr data-id="{{ req.id }}" data-status="{{ req.status }}" data-type="{{ req.request_type }}" data-categorie="{{ req.categorie|default('') }}">
+                                    <td data-label=""><input type="checkbox" class="request-checkbox" value="{{ req.id }}" data-name="{{ req.prenom }} {{ req.nom }}" data-email="{{ req.email }}"></td>
+                                    <td data-label="ID"><span class="fw-semibold">#{{ req.id }}</span></td>
+                                    <td data-label="Type">
                                         {% if req.request_type == 'logement' %}
-                                        <span class="badge bg-primary"><i class="fas fa-home"></i> Logement</span>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2"><i class="fas fa-home me-1"></i>Logement</span>
                                         {% else %}
-                                        <span class="badge bg-success"><i class="fas fa-graduation-cap"></i> Bourse</span>
+                                        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2"><i class="fas fa-graduation-cap me-1"></i>Bourse</span>
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td data-label="Catégorie">
                                         {% if req.request_type == 'bourse' %}
                                             {% if req.categorie == 'etudiant' %}
-                                            <span class="category-badge bg-info bg-opacity-10 text-info"><i class="fas fa-university"></i> Étudiant</span>
+                                            <span class="category-badge category-etudiant"><i class="fas fa-university me-1"></i>Étudiant</span>
                                             {% elif req.categorie == 'eleve' %}
-                                            <span class="category-badge bg-warning bg-opacity-10 text-warning"><i class="fas fa-graduation-cap"></i> Élève</span>
+                                            <span class="category-badge category-eleve"><i class="fas fa-graduation-cap me-1"></i>Élève</span>
                                             {% else %}
                                             <span class="text-muted">-</span>
                                             {% endif %}
                                         {% else %}
-                                            <span class="text-muted">-</span>
+                                        <span class="text-muted">-</span>
                                         {% endif %}
                                     </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
-                                                {{ req.prenom[0]|upper }}{{ req.nom[0]|upper }}
-                                            </div>
+                                    <td data-label="Demandeur">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="student-avatar">{{ req.prenom[0]|upper }}{{ req.nom[0]|upper }}</div>
                                             <div>
-                                                <strong>{{ req.nom }} {{ req.prenom }}</strong>
-                                                <div class="small text-muted">{{ req.adresse[:25] }}...</div>
+                                                <div class="fw-semibold">{{ req.nom }} {{ req.prenom }}</div>
+                                                <div class="small text-muted">{{ req.adresse[:35] }}{% if req.adresse|length > 35 %}...{% endif %}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td data-label="Contact">
                                         <div><i class="fas fa-phone fa-xs text-muted me-1"></i> {{ req.telephone }}</div>
-                                        <div><i class="fas fa-envelope fa-xs text-muted me-1"></i> {{ req.email[:20] }}{% if req.email|length > 20 %}...{% endif %}</div>
-                                     </td>
-                                    <td>
+                                        <div class="small text-muted"><i class="fas fa-envelope fa-xs me-1"></i> {{ req.email[:25] }}{% if req.email|length > 25 %}...{% endif %}</div>
+                                    </td>
+                                    <td data-label="Localisation">
                                         {% if req.request_type == 'logement' %}
-                                        <i class="fas fa-map-marker-alt fa-xs text-muted me-1"></i> {{ req.region_universitaire }}
+                                        <i class="fas fa-map-marker-alt fa-xs text-primary me-1"></i> {{ req.region_universitaire|default('-') }}
                                         {% else %}
-                                        <i class="fas fa-school fa-xs text-muted me-1"></i> {{ req.etablissement[:30] }}{% if req.etablissement|length > 30 %}...{% endif %}
+                                        <i class="fas fa-school fa-xs text-success me-1"></i> {{ req.etablissement|default('-')[:35] }}{% if req.etablissement|length > 35 %}...{% endif %}
                                         {% endif %}
-                                     </td>
-                                    <td>
+                                    </td>
+                                    <td data-label="Statut">
                                         {% if req.status == 'pending' %}
-                                        <span class="status-badge bg-warning bg-opacity-10 text-warning"><i class="fas fa-clock me-1"></i> En attente</span>
+                                        <span class="status-badge status-pending"><i class="fas fa-clock"></i> En attente</span>
                                         {% elif req.status == 'approved' %}
-                                        <span class="status-badge bg-success bg-opacity-10 text-success"><i class="fas fa-check me-1"></i> Approuvé</span>
+                                        <span class="status-badge status-approved"><i class="fas fa-check-circle"></i> Approuvé</span>
                                         {% else %}
-                                        <span class="status-badge bg-danger bg-opacity-10 text-danger"><i class="fas fa-times me-1"></i> Rejeté</span>
+                                        <span class="status-badge status-rejected"><i class="fas fa-times-circle"></i> Rejeté</span>
                                         {% endif %}
-                                     </td>
-                                    <td>
-                                        {{ req.date_submitted.strftime('%d/%m/%Y') }}<br>
-                                        <small class="text-muted">{{ req.date_submitted.strftime('%H:%M') }}</small>
-                                     </td>
-                                    <td>
-                                        <div class="action-buttons d-flex gap-1">
-                                            <a href="{{ url_for('view_request', request_id=req.id) }}" class="btn btn-sm btn-outline-primary" title="Voir"><i class="fas fa-eye"></i></a>
-                                            <button class="btn btn-sm btn-outline-success" onclick="updateStatus({{ req.id }}, 'approved', event)" title="Approuver"><i class="fas fa-check"></i></button>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="updateStatus({{ req.id }}, 'rejected', event)" title="Rejeter"><i class="fas fa-times"></i></button>
-                                            <button class="btn btn-sm btn-outline-info" onclick="selectForEmail({{ req.id }}, '{{ req.prenom }} {{ req.nom }}', '{{ req.email }}')" title="Email"><i class="fas fa-envelope"></i></button>
-                                            <button class="btn btn-sm btn-outline-dark" onclick="deleteSingleRequest({{ req.id }}, event)" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                    <td data-label="Date">
+                                        {{ req.date_submitted.strftime('%d/%m/%Y') }}
+                                        <div class="small text-muted">{{ req.date_submitted.strftime('%H:%M') }}</div>
+                                    </td>
+                                    <td data-label="Actions">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('view_request', request_id=req.id) }}" class="btn btn-outline-primary action-btn" title="Voir"><i class="fas fa-eye"></i></a>
+                                            <button class="btn btn-outline-success action-btn" onclick="updateStatus({{ req.id }}, 'approved')" title="Approuver"><i class="fas fa-check"></i></button>
+                                            <button class="btn btn-outline-danger action-btn" onclick="updateStatus({{ req.id }}, 'rejected')" title="Rejeter"><i class="fas fa-times"></i></button>
+                                            <button class="btn btn-outline-info action-btn" onclick="selectForEmail({{ req.id }}, '{{ req.prenom }} {{ req.nom }}', '{{ req.email }}')" title="Email"><i class="fas fa-envelope"></i></button>
+                                            <button class="btn btn-outline-dark action-btn" onclick="deleteSingleRequest({{ req.id }})" title="Supprimer"><i class="fas fa-trash"></i></button>
                                         </div>
-                                     </td>
+                                    </td>
                                 </tr>
+                                {% else %}
+                                <tr><td colspan="10" class="text-center py-5 text-muted"><i class="fas fa-inbox fa-3x mb-3 d-block"></i>Aucune demande pour le moment</td></tr>
                                 {% endfor %}
-                                {% if requests|length == 0 %}
-                                <tr><td colspan="10" class="text-center py-5"><i class="fas fa-inbox fa-3x text-muted mb-2"></i><p class="text-muted mb-0">Aucune demande pour le moment</p></td></tr>
-                                {% endif %}
                             </tbody>
                         </table>
                     </div>
@@ -408,49 +544,28 @@
             </div>
         </div>
 
-        <!-- ==================== ONGLET LOGEMENT ==================== -->
+        <!-- Onglet : Logement -->
         <div class="tab-pane fade" id="logement" role="tabpanel">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0">
-                    <h5 class="mb-0"><i class="fas fa-home me-2 text-primary"></i>Demandes de logement</h5>
-                </div>
+            <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="logementTable">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Étudiant</th>
-                                    <th>Contact</th>
-                                    <th>Région universitaire</th>
-                                    <th>Statut</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>ID</th><th>Demandeur</th><th>Contact</th><th>Région</th><th>Statut</th><th>Date</th><th>Actions</th></tr>
                             </thead>
                             <tbody>
                                 {% for req in requests if req.request_type == 'logement' %}
-                                <tr data-id="{{ req.id }}" data-status="{{ req.status }}">
-                                    <td>#{{ req.id }}</td>
-                                    <td><strong>{{ req.nom }} {{ req.prenom }}</strong><br><small class="text-muted">{{ req.adresse[:30] }}...</small></td>
-                                    <td>{{ req.telephone }}<br>{{ req.email }}</td>
-                                    <td>{{ req.region_universitaire }}</td>
-                                    <td>
-                                        {% if req.status == 'pending' %}<span class="badge bg-warning">En attente</span>
-                                        {% elif req.status == 'approved' %}<span class="badge bg-success">Approuvé</span>
-                                        {% else %}<span class="badge bg-danger">Rejeté</span>{% endif %}
-                                     </td>
-                                    <td>{{ req.date_submitted.strftime('%d/%m/%Y') }}</td>
-                                    <td>
-                                        <div class="action-buttons d-flex gap-1">
-                                            <a href="{{ url_for('view_request', request_id=req.id) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
-                                            <button class="btn btn-sm btn-outline-success" onclick="updateStatus({{ req.id }}, 'approved', event)"><i class="fas fa-check"></i></button>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="updateStatus({{ req.id }}, 'rejected', event)"><i class="fas fa-times"></i></button>
-                                        </div>
-                                     </td>
+                                <tr>
+                                    <td data-label="ID">#{{ req.id }}</td>
+                                    <td data-label="Demandeur"><div class="fw-semibold">{{ req.nom }} {{ req.prenom }}</div><div class="small text-muted">{{ req.adresse[:30] }}</div></td>
+                                    <td data-label="Contact">{{ req.telephone }}<br>{{ req.email[:25] }}</td>
+                                    <td data-label="Région">{{ req.region_universitaire|default('-') }}</td>
+                                    <td data-label="Statut">{% if req.status == 'pending' %}<span class="status-badge status-pending">En attente</span>{% elif req.status == 'approved' %}<span class="status-badge status-approved">Approuvé</span>{% else %}<span class="status-badge status-rejected">Rejeté</span>{% endif %}</td>
+                                    <td data-label="Date">{{ req.date_submitted.strftime('%d/%m/%Y') }}</td>
+                                    <td data-label="Actions"><div class="btn-group btn-group-sm"><a href="{{ url_for('view_request', request_id=req.id) }}" class="btn btn-outline-primary"><i class="fas fa-eye"></i></a><button class="btn btn-outline-success" onclick="updateStatus({{ req.id }}, 'approved')"><i class="fas fa-check"></i></button><button class="btn btn-outline-danger" onclick="updateStatus({{ req.id }}, 'rejected')"><i class="fas fa-times"></i></button></div></td>
                                 </tr>
                                 {% else %}
-                                <tr><td colspan="7" class="text-center py-4"><i class="fas fa-inbox fa-2x text-muted"></i><p class="mt-2">Aucune demande de logement</p></td></tr>
+                                <tr><td colspan="7" class="text-center py-5 text-muted">Aucune demande de logement</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -459,64 +574,29 @@
             </div>
         </div>
 
-        <!-- ==================== ONGLET BOURSE ==================== -->
+        <!-- Onglet : Bourse -->
         <div class="tab-pane fade" id="bourse" role="tabpanel">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <h5 class="mb-0"><i class="fas fa-graduation-cap me-2 text-success"></i>Demandes de bourse</h5>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-info" id="filterBourseAll"><i class="fas fa-list me-1"></i>Tous</button>
-                            <button class="btn btn-outline-info" id="filterBourseEtudiant"><i class="fas fa-university me-1"></i>Étudiants</button>
-                            <button class="btn btn-outline-warning" id="filterBourseEleve"><i class="fas fa-graduation-cap me-1"></i>Élèves</button>
-                        </div>
-                    </div>
-                </div>
+            <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="bourseTable">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Catégorie</th>
-                                    <th>Étudiant/Élève</th>
-                                    <th>Établissement</th>
-                                    <th>Contact</th>
-                                    <th>Statut</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>ID</th><th>Catégorie</th><th>Demandeur</th><th>Établissement</th><th>Contact</th><th>Statut</th><th>Date</th><th>Actions</th></tr>
                             </thead>
                             <tbody>
                                 {% for req in requests if req.request_type == 'bourse' %}
-                                <tr data-id="{{ req.id }}" data-status="{{ req.status }}" data-categorie="{{ req.categorie }}">
-                                    <td>#{{ req.id }}</td>
-                                    <td>
-                                        {% if req.categorie == 'etudiant' %}
-                                        <span class="badge bg-info"><i class="fas fa-university me-1"></i> Étudiant</span>
-                                        {% else %}
-                                        <span class="badge bg-warning"><i class="fas fa-graduation-cap me-1"></i> Élève</span>
-                                        {% endif %}
-                                     </td>
-                                    <td><strong>{{ req.nom }} {{ req.prenom }}</strong><br><small class="text-muted">{{ req.adresse[:30] }}...</small></td>
-                                    <td><i class="fas fa-school fa-xs text-muted me-1"></i> {{ req.etablissement }}</td>
-                                    <td>{{ req.telephone }}<br>{{ req.email }}</td>
-                                    <td>
-                                        {% if req.status == 'pending' %}<span class="badge bg-warning">En attente</span>
-                                        {% elif req.status == 'approved' %}<span class="badge bg-success">Approuvé</span>
-                                        {% else %}<span class="badge bg-danger">Rejeté</span>{% endif %}
-                                     </td>
-                                    <td>{{ req.date_submitted.strftime('%d/%m/%Y') }}</td>
-                                    <td>
-                                        <div class="action-buttons d-flex gap-1">
-                                            <a href="{{ url_for('view_request', request_id=req.id) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
-                                            <button class="btn btn-sm btn-outline-success" onclick="updateStatus({{ req.id }}, 'approved', event)"><i class="fas fa-check"></i></button>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="updateStatus({{ req.id }}, 'rejected', event)"><i class="fas fa-times"></i></button>
-                                        </div>
-                                     </td>
+                                <tr>
+                                    <td data-label="ID">#{{ req.id }}</td>
+                                    <td data-label="Catégorie">{% if req.categorie == 'etudiant' %}<span class="category-badge category-etudiant"><i class="fas fa-university"></i> Étudiant</span>{% else %}<span class="category-badge category-eleve"><i class="fas fa-graduation-cap"></i> Élève</span>{% endif %}</td>
+                                    <td data-label="Demandeur"><div class="fw-semibold">{{ req.nom }} {{ req.prenom }}</div><div class="small text-muted">{{ req.adresse[:30] }}</div></td>
+                                    <td data-label="Établissement">{{ req.etablissement|default('-')[:35] }}</td>
+                                    <td data-label="Contact">{{ req.telephone }}<br>{{ req.email[:25] }}</td>
+                                    <td data-label="Statut">{% if req.status == 'pending' %}<span class="status-badge status-pending">En attente</span>{% elif req.status == 'approved' %}<span class="status-badge status-approved">Approuvé</span>{% else %}<span class="status-badge status-rejected">Rejeté</span>{% endif %}</td>
+                                    <td data-label="Date">{{ req.date_submitted.strftime('%d/%m/%Y') }}</td>
+                                    <td data-label="Actions"><div class="btn-group btn-group-sm"><a href="{{ url_for('view_request', request_id=req.id) }}" class="btn btn-outline-primary"><i class="fas fa-eye"></i></a><button class="btn btn-outline-success" onclick="updateStatus({{ req.id }}, 'approved')"><i class="fas fa-check"></i></button><button class="btn btn-outline-danger" onclick="updateStatus({{ req.id }}, 'rejected')"><i class="fas fa-times"></i></button></div></td>
                                 </tr>
                                 {% else %}
-                                <tr><td colspan="8" class="text-center py-4"><i class="fas fa-inbox fa-2x text-muted"></i><p class="mt-2">Aucune demande de bourse</p></td></tr>
+                                <tr><td colspan="8" class="text-center py-5 text-muted">Aucune demande de bourse</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -527,72 +607,46 @@
     </div>
 </div>
 
-<!-- Email Modal -->
+<!-- Modal Email -->
 <div class="modal fade" id="emailModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-envelope me-2"></i>Envoyer des emails</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title"><i class="fas fa-envelope me-2"></i>Envoyer un email</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="emailForm">
-                    <div class="mb-3">
-                        <label class="form-label">Destinataires</label>
-                        <select class="form-select" id="recipientType" required>
-                            <option value="">Sélectionner...</option>
-                            <option value="all">Tous les étudiants</option>
-                            <option value="approved">Approuvés uniquement</option>
-                            <option value="rejected">Rejetés uniquement</option>
-                            <option value="pending">En attente uniquement</option>
-                            <option value="selected">Sélectionnés dans le tableau</option>
-                        </select>
-                    </div>
-                    <div class="mb-3" id="selectedInfo" style="display: none;">
-                        <div class="alert alert-warning">
-                            <i class="fas fa-users me-2"></i>
-                            <span id="selectedCountText">0</span> étudiant(s) sélectionné(s)
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Sujet *</label>
-                        <input type="text" class="form-control" id="emailSubject" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Message *</label>
-                        <textarea class="form-control" id="emailMessage" rows="6" required></textarea>
-                        <small class="text-muted">Variables : {nom}, {prenom}, {id}, {date}</small>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Modèles</label>
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-success" onclick="loadTemplate('acceptance')">Acceptation</button>
-                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="loadTemplate('rejection')">Rejet</button>
-                            <button type="button" class="btn btn-sm btn-outline-warning" onclick="loadTemplate('pending')">En attente</button>
-                        </div>
-                    </div>
-                </form>
+                <div class="alert alert-info" id="emailRecipientInfo"></div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Sujet</label>
+                    <input type="text" class="form-control" id="emailSubject" placeholder="Sujet de l'email">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Message</label>
+                    <textarea class="form-control" id="emailMessage" rows="6" placeholder="Votre message..."></textarea>
+                    <small class="text-muted">Variables : {nom}, {prenom}, {id}</small>
+                </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" onclick="sendQuickEmail()"><i class="fas fa-paper-plane me-2"></i>Envoyer</button>
+                <button type="button" class="btn btn-primary" onclick="sendEmail()"><i class="fas fa-paper-plane me-2"></i>Envoyer</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Delete Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="fas fa-trash me-2"></i>Confirmation</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<!-- Modal Confirmation -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="confirmTitle">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="deleteModalBody"></div>
-            <div class="modal-footer">
+            <div class="modal-body" id="confirmMessage"></div>
+            <div class="modal-footer border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Supprimer</button>
+                <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirmer</button>
             </div>
         </div>
     </div>
@@ -603,218 +657,230 @@
 <script>
 let selectedRequests = new Set();
 let selectedStudents = [];
+let currentFilter = { status: 'all', type: 'all', search: '' };
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('recipientType').addEventListener('change', updateEmailModal);
-    
-    // Filtres pour l'onglet Bourse
-    document.getElementById('filterBourseAll')?.addEventListener('click', () => filterBourseTable('all'));
-    document.getElementById('filterBourseEtudiant')?.addEventListener('click', () => filterBourseTable('etudiant'));
-    document.getElementById('filterBourseEleve')?.addEventListener('click', () => filterBourseTable('eleve'));
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+    document.getElementById('typeFilter').addEventListener('change', applyFilters);
+    document.getElementById('searchInput').addEventListener('keyup', applyFilters);
+    updateSelectionDisplay();
 });
 
-function filterBourseTable(categorie) {
-    const rows = document.querySelectorAll('#bourseTable tbody tr');
+function applyFilters() {
+    const status = document.getElementById('statusFilter').value;
+    const type = document.getElementById('typeFilter').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    
+    const rows = document.querySelectorAll('#allTable tbody tr');
+    let visibleCount = 0;
+    
     rows.forEach(row => {
-        if (categorie === 'all') {
-            row.style.display = '';
-        } else {
-            const rowCategorie = row.dataset.categorie;
-            row.style.display = rowCategorie === categorie ? '' : 'none';
-        }
+        const rowStatus = row.dataset.status;
+        const rowType = row.dataset.type;
+        const rowText = row.innerText.toLowerCase();
+        
+        let show = true;
+        if (status !== 'all' && rowStatus !== status) show = false;
+        if (type !== 'all' && rowType !== type) show = false;
+        if (search && !rowText.includes(search)) show = false;
+        
+        row.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
     });
+    
+    document.getElementById('selectedCount').textContent = selectedRequests.size;
 }
 
-function toggleSelectAllAll(checkbox) {
-    const checkboxes = document.querySelectorAll('#allRequestsTable .request-checkbox');
-    checkboxes.forEach(cb => {
-        cb.checked = checkbox.checked;
-        if (checkbox.checked) {
-            selectedRequests.add(parseInt(cb.value));
-            selectedStudents.push({id: parseInt(cb.value), nom: cb.dataset.name, email: cb.dataset.email});
-        } else {
-            selectedRequests.delete(parseInt(cb.value));
-            selectedStudents = selectedStudents.filter(s => s.id !== parseInt(cb.value));
-        }
-    });
-    updateSelectionCount();
+function resetFilters() {
+    document.getElementById('statusFilter').value = 'all';
+    document.getElementById('typeFilter').value = 'all';
+    document.getElementById('searchInput').value = '';
+    applyFilters();
 }
 
-function selectAll() {
-    const checkboxes = document.querySelectorAll('#allRequestsTable .request-checkbox');
+function toggleSelectAll(checkbox) {
+    const visibleRows = document.querySelectorAll('#allTable tbody tr:not([style*="display: none"])');
+    visibleRows.forEach(row => {
+        const cb = row.querySelector('.request-checkbox');
+        if (cb) {
+            cb.checked = checkbox.checked;
+            const id = parseInt(cb.value);
+            if (checkbox.checked) {
+                selectedRequests.add(id);
+                selectedStudents.push({id: id, nom: cb.dataset.name, email: cb.dataset.email});
+            } else {
+                selectedRequests.delete(id);
+                selectedStudents = selectedStudents.filter(s => s.id !== id);
+            }
+        }
+    });
+    updateSelectionDisplay();
+}
+
+function selectAllVisible() {
+    const checkboxes = document.querySelectorAll('#allTable tbody tr:not([style*="display: none"]) .request-checkbox');
     checkboxes.forEach(cb => {
         cb.checked = true;
-        selectedRequests.add(parseInt(cb.value));
-        selectedStudents.push({id: parseInt(cb.value), nom: cb.dataset.name, email: cb.dataset.email});
+        const id = parseInt(cb.value);
+        selectedRequests.add(id);
+        if (!selectedStudents.some(s => s.id === id)) {
+            selectedStudents.push({id: id, nom: cb.dataset.name, email: cb.dataset.email});
+        }
     });
-    document.getElementById('selectAllAll').checked = checkboxes.length > 0;
-    updateSelectionCount();
+    updateSelectionDisplay();
 }
 
-function updateSelectionCount() {
-    const count = document.querySelectorAll('#allRequestsTable .request-checkbox:checked').length;
-    document.getElementById('selectedCountText').textContent = count;
-}
-
-function updateEmailModal() {
-    const type = document.getElementById('recipientType').value;
-    document.getElementById('selectedInfo').style.display = type === 'selected' ? 'block' : 'none';
+function updateSelectionDisplay() {
+    document.getElementById('selectedCount').textContent = selectedRequests.size;
+    const selectAll = document.getElementById('selectAllCheckbox');
+    if (selectAll) selectAll.checked = false;
 }
 
 function selectForEmail(id, name, email) {
     if (!selectedStudents.some(s => s.id === id)) {
         selectedStudents.push({id, nom: name, email});
         selectedRequests.add(id);
-        const cb = document.querySelector(`#allRequestsTable .request-checkbox[value="${id}"]`);
+        const cb = document.querySelector(`.request-checkbox[value="${id}"]`);
         if (cb) cb.checked = true;
     }
-    updateSelectionCount();
-    const modalEl = document.getElementById('emailModal');
-    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-    modal.show();
-    document.getElementById('recipientType').value = 'selected';
-    updateEmailModal();
+    updateSelectionDisplay();
+    document.getElementById('emailRecipientInfo').innerHTML = `<i class="fas fa-users me-2"></i>Envoi à ${selectedStudents.length} destinataire(s) sélectionné(s)`;
+    new bootstrap.Modal(document.getElementById('emailModal')).show();
 }
 
-async function updateStatus(requestId, status, event) {
-    if (event) event.stopPropagation();
-    const notes = prompt('Notes (optionnel):');
-    if (notes === null) return;
+async function sendEmail() {
+    if (selectedStudents.length === 0) {
+        alert('Aucun destinataire sélectionné');
+        return;
+    }
+    const subject = document.getElementById('emailSubject').value;
+    const message = document.getElementById('emailMessage').value;
+    if (!subject || !message) {
+        alert('Veuillez remplir le sujet et le message');
+        return;
+    }
     
     showLoading();
     try {
-        const response = await fetch(`/admin/update_status/${requestId}`, {
+        const response = await fetch('/admin/send_email', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                recipient_type: 'selected',
+                subject: subject,
+                message: message,
+                selected_ids: Array.from(selectedRequests)
+            })
+        });
+        const result = await response.json();
+        if (response.ok) {
+            alert('Email(s) envoyé(s) avec succès !');
+            bootstrap.Modal.getInstance(document.getElementById('emailModal')).hide();
+            document.getElementById('emailSubject').value = '';
+            document.getElementById('emailMessage').value = '';
+        } else {
+            alert('Erreur: ' + (result.error || 'Échec de l\'envoi'));
+        }
+    } catch(e) { alert('Erreur: ' + e); }
+    hideLoading();
+}
+
+async function updateStatus(id, status) {
+    const notes = prompt('Notes (optionnel) :');
+    if (notes === null) return;
+    showLoading();
+    try {
+        const response = await fetch(`/admin/update_status/${id}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({status: status, notes: notes || ''})
         });
-        if (response.ok) {
-            showSuccess('Statut mis à jour !');
-            setTimeout(() => location.reload(), 1000);
-        } else showError('Erreur');
-    } catch (error) { showError('Erreur: ' + error); }
+        if (response.ok) { alert('Statut mis à jour !'); location.reload(); }
+        else alert('Erreur lors de la mise à jour');
+    } catch(e) { alert('Erreur: ' + e); }
     hideLoading();
 }
 
-async function updateSelected(status) {
-    if (selectedRequests.size === 0) return showError('Sélectionnez au moins une demande');
-    const notes = prompt('Notes (optionnel):');
+async function bulkUpdateStatus(status) {
+    if (selectedRequests.size === 0) {
+        alert('Veuillez sélectionner au moins une demande');
+        return;
+    }
+    const notes = prompt('Notes pour toutes les demandes sélectionnées :');
     if (notes === null) return;
     
     showLoading();
+    let success = 0, error = 0;
     for (const id of selectedRequests) {
         try {
             await fetch(`/admin/update_status/${id}`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({status: status, notes: notes || ''})
             });
-        } catch(e) { console.error(e); }
+            success++;
+        } catch(e) { error++; }
     }
     hideLoading();
-    showSuccess('Mise à jour terminée');
-    setTimeout(() => location.reload(), 1500);
+    alert(`${success} mise(s) à jour réussie(s), ${error} erreur(s)`);
+    location.reload();
 }
 
-function exportSelected() {
-    if (selectedRequests.size === 0) return showError('Sélectionnez au moins une demande');
-    let csv = "ID,Nom,Prénom,Email,Statut\n";
-    selectedStudents.forEach(s => csv += `${s.id},${s.nom.split(' ')[1]},${s.nom.split(' ')[0]},${s.email},\n`);
-    const blob = new Blob([csv], {type: 'text/csv'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `export_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-    showSuccess('Export terminé');
-}
-
-async function deleteSingleRequest(id, event) {
-    if (event) event.stopPropagation();
-    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    document.getElementById('deleteModalBody').innerHTML = `<p>Supprimer la demande #${id} ?</p><div class="alert alert-danger">Action irréversible</div>`;
-    document.getElementById('confirmDeleteBtn').onclick = async () => {
-        modal.hide();
+async function deleteSingleRequest(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette demande ? Action irréversible.')) {
         showLoading();
         const response = await fetch(`/admin/delete_request/${id}`, {method: 'POST'});
         const result = await response.json();
-        if (response.ok) {
-            showSuccess(result.message);
-            setTimeout(() => location.reload(), 1000);
-        } else showError('Erreur');
+        if (response.ok) { alert(result.message); location.reload(); }
+        else alert('Erreur lors de la suppression');
         hideLoading();
-    };
-    modal.show();
-}
-
-async function deleteSelected() {
-    if (selectedRequests.size === 0) return showError('Sélectionnez au moins une demande');
-    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    document.getElementById('deleteModalBody').innerHTML = `<p>Supprimer ${selectedRequests.size} demande(s) ?</p><div class="alert alert-danger">Action irréversible</div>`;
-    document.getElementById('confirmDeleteBtn').onclick = async () => {
-        modal.hide();
-        showLoading();
-        const response = await fetch('/admin/delete_requests', {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({request_ids: Array.from(selectedRequests)})
-        });
-        const result = await response.json();
-        if (response.ok) {
-            showSuccess(result.message);
-            setTimeout(() => location.reload(), 1000);
-        } else showError('Erreur');
-        hideLoading();
-    };
-    modal.show();
-}
-
-async function sendQuickEmail() {
-    const type = document.getElementById('recipientType').value;
-    const subject = document.getElementById('emailSubject').value;
-    const message = document.getElementById('emailMessage').value;
-    if (!type || !subject || !message) return showError('Tous les champs requis');
-    if (type === 'selected' && selectedRequests.size === 0) return showError('Sélectionnez des destinataires');
-    
-    showLoading();
-    const response = await fetch('/admin/send_email', {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            recipient_type: type, subject, message,
-            custom_emails: [], selected_ids: type === 'selected' ? Array.from(selectedRequests) : []
-        })
-    });
-    const result = await response.json();
-    hideLoading();
-    if (response.ok) {
-        showSuccess(result.message);
-        bootstrap.Modal.getInstance(document.getElementById('emailModal'))?.hide();
-        document.getElementById('emailForm').reset();
-    } else showError('Erreur');
-}
-
-function loadTemplate(templateType) {
-    const templates = {
-        acceptance: {subject: 'Félicitations ! Votre demande a été acceptée',
-            message: 'Cher/Chère {prenom} {nom},\n\nVotre demande (ID: {id}) a été acceptée.\n\nCordialement, La Commission Sociale REED'},
-        rejection: {subject: 'Décision concernant votre demande',
-            message: 'Cher/Chère {prenom} {nom},\n\nVotre demande (ID: {id}) n\'a pas pu être acceptée.\n\nCordialement, La Commission Sociale REED'},
-        pending: {subject: 'Mise à jour sur votre demande',
-            message: 'Cher/Chère {prenom} {nom},\n\nVotre demande (ID: {id}) est en cours de traitement.\n\nCordialement, La Commission Sociale REED'}
-    };
-    const t = templates[templateType];
-    if (t) {
-        document.getElementById('emailSubject').value = t.subject;
-        document.getElementById('emailMessage').value = t.message;
     }
 }
 
-function showLoading(msg = 'Chargement...') {
+async function bulkDelete() {
+    if (selectedRequests.size === 0) {
+        alert('Veuillez sélectionner au moins une demande');
+        return;
+    }
+    if (confirm(`Supprimer définitivement ${selectedRequests.size} demande(s) ? Cette action est irréversible.`)) {
+        showLoading();
+        const response = await fetch('/admin/delete_requests', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({request_ids: Array.from(selectedRequests)})
+        });
+        const result = await response.json();
+        if (response.ok) { alert(result.message); location.reload(); }
+        else alert('Erreur lors de la suppression');
+        hideLoading();
+    }
+}
+
+function exportSelectedToCSV() {
+    if (selectedStudents.length === 0) {
+        alert('Aucune demande sélectionnée');
+        return;
+    }
+    let csv = "ID,Nom,Prénom,Email,Statut\n";
+    selectedStudents.forEach(s => {
+        csv += `${s.id},${s.nom.split(' ')[1] || ''},${s.nom.split(' ')[0] || ''},${s.email},\n`;
+    });
+    const blob = new Blob([csv], {type: 'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `export_demandes_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function showLoading() {
     let overlay = document.getElementById('loadingOverlay');
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'loadingOverlay';
         overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999';
-        overlay.innerHTML = `<div class="bg-white p-4 rounded shadow-lg text-center"><div class="spinner-border text-primary mb-3"></div><div>${msg}</div></div>`;
+        overlay.innerHTML = '<div class="bg-white p-4 rounded-4 shadow-lg text-center"><div class="spinner-border text-primary mb-3"></div><div>Traitement en cours...</div></div>';
         document.body.appendChild(overlay);
     } else overlay.style.display = 'flex';
 }
@@ -822,17 +888,6 @@ function showLoading(msg = 'Chargement...') {
 function hideLoading() {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) overlay.style.display = 'none';
-}
-
-function showSuccess(msg) { showNotification(msg, 'success'); }
-function showError(msg) { showNotification(msg, 'danger'); }
-function showNotification(msg, type) {
-    const n = document.createElement('div');
-    n.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-    n.style.cssText = 'top:20px;right:20px;z-index:10000;min-width:300px';
-    n.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-    document.body.appendChild(n);
-    setTimeout(() => n.remove(), 5000);
 }
 </script>
 {% endblock %}
