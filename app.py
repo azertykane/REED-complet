@@ -1469,7 +1469,7 @@ def export_admis_logement_pdf():
 
 @app.route('/admin/export/admis_bourse/pdf')
 def export_admis_bourse_pdf():
-    """Exporter la liste des admis à la bourse en PDF avec séparation élèves/étudiants"""
+    """Exporter la liste des admis à la bourse en PDF avec signature en bas de chaque page"""
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
     
@@ -1478,6 +1478,7 @@ def export_admis_bourse_pdf():
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm
+    from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate
     import io
     
     # Récupérer les données séparément
@@ -1485,9 +1486,75 @@ def export_admis_bourse_pdf():
     eleves = StudentRequest.query.filter_by(request_type='bourse', status='approved', categorie='eleve').order_by(StudentRequest.nom).all()
     
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), 
-                           rightMargin=1*cm, leftMargin=1*cm, 
-                           topMargin=1.5*cm, bottomMargin=1*cm)
+    
+    # Template personnalisé avec signature en bas de page
+    class MyDocTemplate(BaseDocTemplate):
+        def __init__(self, filename, **kwargs):
+            BaseDocTemplate.__init__(self, filename, **kwargs)
+            
+            # Définir les frames
+            page_width, page_height = landscape(A4)
+            margin = 1.5*cm
+            footer_height = 3*cm
+            
+            # Frame principal (avec espace pour le pied de page)
+            main_frame = Frame(
+                margin, margin + footer_height,
+                page_width - 2*margin, page_height - 2*margin - footer_height,
+                id='main'
+            )
+            
+            # Template avec la fonction de footer
+            template = PageTemplate(
+                id='with_footer',
+                frames=[main_frame],
+                onPage=self._footer
+            )
+            self.addPageTemplates([template])
+        
+        def _footer(self, canvas, doc):
+            """Ajouter le footer (signature) sur chaque page"""
+            canvas.saveState()
+            
+            # Position du footer
+            page_width, page_height = landscape(A4)
+            footer_y = 1.5*cm
+            
+            # Ligne de séparation
+            canvas.setStrokeColor(colors.HexColor('#CCCCCC'))
+            canvas.line(1.5*cm, footer_y + 2*cm, page_width - 1.5*cm, footer_y + 2*cm)
+            
+            # Date et signature
+            canvas.setFont('Helvetica', 9)
+            canvas.setFillColor(colors.black)
+            
+            # Date
+            from datetime import datetime
+            date_str = datetime.now().strftime('%d/%m/%Y')
+            canvas.drawString(1.5*cm, footer_y + 1.5*cm, f"Date: {date_str}")
+            
+            # Signature responsable (gauche)
+            canvas.drawString(1.5*cm, footer_y + 0.5*cm, "Signature du responsable")
+            canvas.line(1.5*cm, footer_y + 0.3*cm, 6*cm, footer_y + 0.3*cm)
+            
+            # Cachet commission (droite)
+            canvas.drawString(page_width - 7*cm, footer_y + 0.5*cm, "Cachet de la commission")
+            canvas.line(page_width - 7*cm, footer_y + 0.3*cm, page_width - 1.5*cm, footer_y + 0.3*cm)
+            
+            # Numéro de page
+            canvas.drawCentredString(page_width / 2, footer_y + 0.5*cm, f"Page {doc.page}")
+            
+            canvas.restoreState()
+    
+    # Créer le document avec le template personnalisé
+    doc = MyDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=1*cm,
+        leftMargin=1*cm,
+        topMargin=1.5*cm,
+        bottomMargin=1.5*cm
+    )
     elements = []
     
     # Styles
@@ -1516,25 +1583,20 @@ def export_admis_bourse_pdf():
         elements.append(Paragraph("Aucun étudiant bénéficiaire pour la bourse.", styles['Normal']))
     else:
         # En-têtes du tableau
-        data = [['N°', 'Prénom', 'Nom', 'Date de naissance', 'Lieu de naissance', 'Adresse', 'Établissement', 'Émargement']]
+        data = [['N°', 'Prénom', 'Nom', 'Date naiss.', 'Lieu naiss.', 'Adresse', 'Établissement', 'Émargement']]
         
         for idx, req in enumerate(etudiants, start=1):
             date_naiss = req.date_naissance if hasattr(req, 'date_naissance') and req.date_naissance else '-'
             lieu_naiss = req.lieu_naissance if hasattr(req, 'lieu_naissance') and req.lieu_naissance else '-'
-            adresse = req.adresse[:45] + '...' if len(req.adresse) > 45 else req.adresse
+            adresse = req.adresse[:40] + '...' if len(req.adresse) > 40 else req.adresse
             
             data.append([
-                str(idx),
-                req.prenom,
-                req.nom,
-                date_naiss,
-                lieu_naiss,
-                adresse,
-                req.etablissement[:35] + '...' if len(req.etablissement) > 35 else req.etablissement,
+                str(idx), req.prenom, req.nom, date_naiss, lieu_naiss,
+                adresse, req.etablissement[:30] + '...' if len(req.etablissement) > 30 else req.etablissement,
                 ''
             ])
         
-        col_widths = [1.2*cm, 3*cm, 3*cm, 3*cm, 3.5*cm, 5*cm, 4*cm, 2.5*cm]
+        col_widths = [1*cm, 2.8*cm, 2.8*cm, 2.5*cm, 3*cm, 5*cm, 4*cm, 2.5*cm]
         
         table = Table(data, colWidths=col_widths, repeatRows=1)
         table.setStyle(TableStyle([
@@ -1562,39 +1624,31 @@ def export_admis_bourse_pdf():
         elements.append(Paragraph(f"Nombre total d'étudiants : {len(etudiants)}", styles['Normal']))
     
     # ==================== PAGE 2 : ÉLÈVES ====================
-    elements.append(PageBreak())
-    
-    elements.append(Paragraph("Liste des bénéficiaires - Bourse REED", title_style))
-    elements.append(Paragraph(f"Généré le {date_str}", subtitle_style))
-    elements.append(Spacer(1, 15))
-    
-    # Section Élèves
-    elements.append(Paragraph("CATÉGORIE : ÉLÈVES", section_style))
-    elements.append(Spacer(1, 10))
-    
-    if not eleves:
-        elements.append(Paragraph("Aucun élève bénéficiaire pour la bourse.", styles['Normal']))
-    else:
-        # En-têtes du tableau (identique pour élèves)
-        data = [['N°', 'Prénom', 'Nom', 'Date de naissance', 'Lieu de naissance', 'Adresse', 'Établissement', 'Émargement']]
+    if eleves:
+        elements.append(PageBreak())
+        
+        elements.append(Paragraph("Liste des bénéficiaires - Bourse REED", title_style))
+        elements.append(Paragraph(f"Généré le {date_str}", subtitle_style))
+        elements.append(Spacer(1, 15))
+        
+        # Section Élèves
+        elements.append(Paragraph("CATÉGORIE : ÉLÈVES", section_style))
+        elements.append(Spacer(1, 10))
+        
+        data = [['N°', 'Prénom', 'Nom', 'Date naiss.', 'Lieu naiss.', 'Adresse', 'Établissement', 'Émargement']]
         
         for idx, req in enumerate(eleves, start=1):
             date_naiss = req.date_naissance if hasattr(req, 'date_naissance') and req.date_naissance else '-'
             lieu_naiss = req.lieu_naissance if hasattr(req, 'lieu_naissance') and req.lieu_naissance else '-'
-            adresse = req.adresse[:45] + '...' if len(req.adresse) > 45 else req.adresse
+            adresse = req.adresse[:40] + '...' if len(req.adresse) > 40 else req.adresse
             
             data.append([
-                str(idx),
-                req.prenom,
-                req.nom,
-                date_naiss,
-                lieu_naiss,
-                adresse,
-                req.etablissement[:35] + '...' if len(req.etablissement) > 35 else req.etablissement,
+                str(idx), req.prenom, req.nom, date_naiss, lieu_naiss,
+                adresse, req.etablissement[:30] + '...' if len(req.etablissement) > 30 else req.etablissement,
                 ''
             ])
         
-        col_widths = [1.2*cm, 3*cm, 3*cm, 3*cm, 3.5*cm, 5*cm, 4*cm, 2.5*cm]
+        col_widths = [1*cm, 2.8*cm, 2.8*cm, 2.5*cm, 3*cm, 5*cm, 4*cm, 2.5*cm]
         
         table = Table(data, colWidths=col_widths, repeatRows=1)
         table.setStyle(TableStyle([
@@ -1621,31 +1675,7 @@ def export_admis_bourse_pdf():
         elements.append(Spacer(1, 10))
         elements.append(Paragraph(f"Nombre total d'élèves : {len(eleves)}", styles['Normal']))
     
-    # ==================== PAGE DE SIGNATURE (optionnelle) ====================
-    elements.append(PageBreak())
-    
-    elements.append(Paragraph("Liste des bénéficiaires - Bourse REED", title_style))
-    elements.append(Paragraph(f"Généré le {date_str}", subtitle_style))
-    elements.append(Spacer(1, 30))
-    
-    # Lignes de signature
-    signature_data = [
-        ['', ''],
-        ['Date et signature du responsable', 'Cachet de la commission']
-    ]
-    
-    signature_table = Table(signature_data, colWidths=[9*cm, 9*cm])
-    signature_table.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LINEABOVE', (0, 0), (0, 0), 0.5, colors.black),
-        ('LINEABOVE', (1, 0), (1, 0), 0.5, colors.black),
-        ('TOPPADDING', (0, 0), (-1, -1), 20),
-    ]))
-    
-    elements.append(signature_table)
-    
+    # Construire le document
     doc.build(elements)
     buffer.seek(0)
     
